@@ -48,10 +48,66 @@ describe("MCP surface", () => {
     expect(payload?.patterns[0]?.pattern.id).toMatch(/adapter|anti-corruption-layer/);
   });
 
+  it("executes every decision workflow tool", async () => {
+    const designCase = {
+      problem: "Multiple pricing algorithms vary at runtime while checkout flow remains stable.",
+      changeAxes: ["pricing policy"],
+      evidence: ["policies changed fourteen times this quarter"],
+    };
+    const calls = [
+      {
+        name: "compare_pattern_options",
+        arguments: { case: designCase, patterns: ["Strategy", "Template Method"] },
+      },
+      {
+        name: "detect_pattern_misuse",
+        arguments: { case: designCase, patternsInUse: ["Singleton", "Strategy"] },
+      },
+      {
+        name: "stress_test_pattern_decision",
+        arguments: {
+          case: designCase,
+          scenarios: [
+            {
+              name: "behavior becomes fixed",
+              patch: {
+                problem: "One fixed pricing calculation has no expected axis of variation.",
+                evidence: ["the rule has not changed in three years"],
+              },
+            },
+          ],
+        },
+      },
+      {
+        name: "plan_pattern_adoption",
+        arguments: { case: designCase, pattern: "Strategy" },
+      },
+      {
+        name: "write_pattern_adr",
+        arguments: { title: "Select pricing behavior", case: designCase },
+      },
+      {
+        name: "get_pattern_evidence_plan",
+        arguments: { case: designCase, pattern: "Strategy" },
+      },
+      {
+        name: "query_pattern_graph",
+        arguments: { text: designCase.problem, seedPatterns: ["Strategy"], limit: 8 },
+      },
+    ] as const;
+
+    for (const call of calls) {
+      const result = await client.callTool(call);
+      expect(result.isError, call.name).not.toBe(true);
+      expect(result.structuredContent, call.name).toHaveProperty("result");
+    }
+  });
+
   it("serves catalog and templated pattern resources", async () => {
     const resources = await client.listResources();
     const templates = await client.listResourceTemplates();
     const detail = await client.readResource({ uri: "pattern://pattern/strategy" });
+    const layer = await client.readResource({ uri: "pattern://layer/testing" });
     const firstContent = detail.contents[0];
 
     expect(resources.resources.map((resource) => resource.uri)).toContain("pattern://catalog");
@@ -62,6 +118,9 @@ describe("MCP surface", () => {
     expect(firstContent && "text" in firstContent ? firstContent.text : "").toContain(
       '"name": "Strategy"',
     );
+    expect(
+      layer.contents[0] && "text" in layer.contents[0] ? layer.contents[0].text : "",
+    ).toContain('"name": "Contract Test"');
   });
 
   it("returns workflow prompts that direct intelligent tool use", async () => {
