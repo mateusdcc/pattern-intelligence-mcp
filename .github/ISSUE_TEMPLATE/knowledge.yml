@@ -1,0 +1,23 @@
+name: Knowledge improvement
+description: Propose a pattern, force, relation, or benchmark correction.
+title: "knowledge: "
+labels: [knowledge]
+body:
+  - type: textarea
+    attributes:
+      label: Observed gap
+      description: Show a concrete case where the current knowledge produces the wrong boundary.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Evidence
+      description: Link primary sources or provide anonymized system evidence.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Positive and negative cases
+      description: State when the proposed change should and should not apply.
+    validations:
+      required: true

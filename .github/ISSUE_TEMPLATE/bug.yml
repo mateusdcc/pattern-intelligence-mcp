@@ -1,0 +1,22 @@
+name: Bug report
+description: Report incorrect behavior or a protocol failure.
+title: "bug: "
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: Reproduction
+      description: Include the smallest design case or MCP request that reproduces the issue.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected decision boundary
+      description: Explain which force, cost, or contradiction should change the result.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Version
+    validations:
+      required: true
