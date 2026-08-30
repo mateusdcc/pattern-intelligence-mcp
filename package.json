@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Evidence-aware design-pattern decision support for AI agents via MCP.",
   "type": "module",
-  "private": true,
   "bin": {
     "pattern-intelligence-mcp": "./dist/cli.js"
   },
@@ -33,7 +32,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.11",
+    "@modelcontextprotocol/client": "^2.0.0",
     "@types/node": "24.13.3",
+    "@vitest/coverage-v8": "^4.1.11",
     "tsx": "4.23.13",
     "typescript": "7.0.2",
     "vitest": "4.1.11"
