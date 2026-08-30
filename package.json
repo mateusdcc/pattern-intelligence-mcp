@@ -1,0 +1,41 @@
+{
+  "name": "pattern-intelligence-mcp",
+  "version": "0.1.0",
+  "description": "Evidence-aware design-pattern decision support for AI agents via MCP.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "pattern-intelligence-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "knowledge",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "dev": "tsx src/index.ts",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.11",
+    "@types/node": "24.13.3",
+    "tsx": "4.23.13",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}
