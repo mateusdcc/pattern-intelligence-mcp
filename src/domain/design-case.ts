@@ -52,6 +52,11 @@ export const designCasePatchSchema = designCaseSchema
     problem: z.string().min(10).optional(),
   });
 
+export const scenarioMutationSchema = z.object({
+  name: z.string().min(3),
+  patch: designCasePatchSchema,
+});
+
 export type DesignCase = z.infer<typeof designCaseSchema>;
 export type DesignCaseInput = z.input<typeof designCaseSchema>;
 export type DesignCasePatch = z.infer<typeof designCasePatchSchema>;

@@ -1,6 +1,7 @@
 import type {
   DecisionAnalysis,
   MisuseFinding,
+  PatternAssessment,
   PatternComparison,
   ScenarioMutation,
   StressTestResult,
@@ -34,6 +35,12 @@ export class PatternIntelligence {
 
   public compare(input: DesignCaseInput, patternNames: readonly string[]): PatternComparison {
     return this.#comparisons.compare(input, patternNames);
+  }
+
+  public assessPattern(input: DesignCaseInput, patternName: string): PatternAssessment {
+    const pattern = this.store.findByNameOrId(patternName);
+    if (!pattern) throw new Error(`Unknown pattern: ${patternName}`);
+    return this.#recommendations.scorePattern(pattern.id, input);
   }
 
   public detectMisuse(

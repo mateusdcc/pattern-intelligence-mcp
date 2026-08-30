@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "bin": {
-    "pattern-intelligence-mcp": "./dist/index.js"
+    "pattern-intelligence-mcp": "./dist/cli.js"
   },
   "files": [
     "dist",
