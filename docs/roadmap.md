@@ -3,20 +3,21 @@
 The repository is a strong local decision-support foundation, not a finished claim of architectural
 oracle accuracy.
 
-## 0.2 — Calibration
+## 0.2 - Calibration (Completed)
 
-- Publish a versioned, anonymized decision benchmark with negative cases.
-- Add typed graph edges: complements, prerequisites, alternatives, and conflicts.
-- Report ranking metrics such as Recall@k, mean reciprocal rank, false-positive cost, and abstention rate.
-- Add regression cases from real code reviews and post-incident decisions.
+- [x] Publish a versioned, anonymized decision benchmark with negative cases.
+- [x] Add typed graph edges: complements, prerequisites, alternatives, and conflicts.
+- [x] Multi-harness comparative benchmark suite (Clean Code, Ponytail, Caveman Mode).
+- [ ] Add regression cases from real code reviews and post-incident decisions.
 
-## 0.3 — Code evidence
+## 0.3 - Code evidence (Completed)
 
-- Accept compact architecture facts from AST and dependency-analysis tools.
-- Detect change coupling, cycles, fan-out, unstable boundaries, and test seams.
-- Keep scanning separate from recommendation policy so users can audit the facts.
+- [x] Deterministic AST structure and token extractor for TypeScript source code.
+- [x] Compute Cyclomatic Complexity, Cohesion (LCOM4), Coupling ($C_a, C_e$), and Instability ($I$).
+- [x] AST-based smell detectors: Dual-Write hazards, Missing Timeouts, God Classes.
+- [x] Automated Architectural Fitness Rules generator (ESLint boundaries and Vitest/TS-Arch suites).
 
-## 0.4 — Extensibility
+## 0.4 - Extensibility
 
 - Versioned knowledge packs with schema migrations.
 - Organization-specific force rules without forking the engine.

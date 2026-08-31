@@ -18,7 +18,7 @@ S(p,c) = N + L + F + C + P - A - X
 | \(A\) | Adoption and operational complexity | subtractive |
 | \(X\) | Contradictions and anti-goals | up to 35 subtractive |
 
-The final value is clamped to 0–100. Every term is returned in `scoreBreakdown`.
+The final value is clamped to 0-100. Every term is returned in `scoreBreakdown`.
 
 ## Why exact names have weight
 

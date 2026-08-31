@@ -17,9 +17,9 @@ flowchart TD
 
 `src/domain` owns schemas and result contracts. `src/knowledge` validates and indexes the catalog and
 declares the force ontology. `src/engine` performs deterministic concept detection, scoring, force
-analysis, comparison, misuse inspection, stress testing, and evidence planning. `src/application`
-composes those capabilities. `src/mcp` converts protocol input to application calls and returns
-structured results.
+analysis, comparison, misuse inspection, stress testing, evidence planning, AST code quality analysis,
+refactoring synthesis, and architectural fitness rule generation. `src/application` composes those
+capabilities. `src/mcp` converts protocol input to application calls and returns structured results.
 
 No engine module imports MCP. No knowledge module knows about prompts or transports.
 
@@ -35,7 +35,7 @@ No engine module imports MCP. No knowledge module knows about prompts or transpo
 
 ## Why there is no vector database
 
-The current corpus is 110 records. A deterministic inverted comparison plus an explicit ontology is
+The current corpus is 116 records across 11 architectural layers. A deterministic inverted comparison plus an explicit ontology is
 fast, inspectable, cheap to run locally, and testable. An embedding index would add model choice,
 versioning, storage, and explanation problems before retrieval quality has been shown to require it.
 
