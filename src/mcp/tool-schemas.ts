@@ -40,3 +40,12 @@ export const graphInputSchema = z.object({
   maxAdoptionCost: costSchema.default("high"),
   limit: z.number().int().min(1).max(30).default(12),
 });
+
+export const codeQualityInputSchema = z.object({
+  code: z.string().min(5),
+  fileName: z.string().optional().default("component.ts"),
+});
+
+export const synthesizeRefactoringInputSchema = z.object({
+  pattern: z.string().min(2),
+});

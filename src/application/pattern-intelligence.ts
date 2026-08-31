@@ -1,3 +1,4 @@
+import type { CodeQualityReport } from "../domain/code-quality.js";
 import type {
   DecisionAnalysis,
   MisuseFinding,
@@ -7,9 +8,14 @@ import type {
   StressTestResult,
 } from "../domain/decision.js";
 import type { DesignCaseInput } from "../domain/design-case.js";
+import { analyzeCodeQuality } from "../engine/code-quality-analyzer.js";
 import { ComparisonEngine } from "../engine/comparison-engine.js";
 import { MisuseDetector } from "../engine/misuse-detector.js";
 import { RecommendationEngine } from "../engine/recommendation-engine.js";
+import {
+  type RefactoringScaffold,
+  synthesizeRefactoring,
+} from "../engine/refactoring-synthesizer.js";
 import { StressTestEngine } from "../engine/stress-test-engine.js";
 import { loadCatalog } from "../knowledge/catalog-loader.js";
 import { PatternStore } from "../knowledge/pattern-store.js";
@@ -55,5 +61,13 @@ export class PatternIntelligence {
     mutations: readonly ScenarioMutation[],
   ): StressTestResult {
     return this.#stressTests.stressTest(input, mutations);
+  }
+
+  public diagnoseCodeQuality(code: string, fileName?: string): CodeQualityReport {
+    return analyzeCodeQuality(code, fileName);
+  }
+
+  public synthesizeRefactoring(patternName: string): RefactoringScaffold {
+    return synthesizeRefactoring(patternName);
   }
 }

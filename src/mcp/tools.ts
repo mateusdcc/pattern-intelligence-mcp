@@ -5,11 +5,13 @@ import type { PatternIntelligence } from "../application/pattern-intelligence.js
 import {
   adrInputSchema,
   analyzeInputSchema,
+  codeQualityInputSchema,
   compareInputSchema,
   graphInputSchema,
   misuseInputSchema,
   patternDecisionInputSchema,
   stressTestInputSchema,
+  synthesizeRefactoringInputSchema,
 } from "./tool-schemas.js";
 
 export const TOOL_NAMES = [
@@ -21,6 +23,8 @@ export const TOOL_NAMES = [
   "write_pattern_adr",
   "get_pattern_evidence_plan",
   "query_pattern_graph",
+  "diagnose_code_quality",
+  "synthesize_pattern_refactoring",
 ] as const;
 
 const READ_ONLY = {
@@ -159,7 +163,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
     {
       title: "Query the pattern graph",
       description:
-        "Traverse contextual candidates and explicit pattern relationships with layer and cost filters. Use for bounded discovery around a problem or seed—not to dump the entire catalog.",
+        "Traverse contextual candidates and explicit pattern relationships with layer and cost filters. Use for bounded discovery around a problem or seed - not to dump the entire catalog.",
       inputSchema: graphInputSchema,
       annotations: READ_ONLY,
     },
@@ -168,6 +172,42 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
       return toolResult(
         result,
         `${result.nodes.length} contextual node(s), ${result.edges.length} relation(s).`,
+      );
+    },
+  );
+
+  server.registerTool(
+    TOOL_NAMES[8],
+    {
+      title: "Diagnose code quality and smells",
+      description:
+        "Analyze code or architecture snippets for cyclomatic complexity, coupling, cohesion, and architectural smells (God Class, Dual-Write, Missing Timeout, Leaky Abstractions, OCC).",
+      inputSchema: codeQualityInputSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ code, fileName }) => {
+      const result = intelligence.diagnoseCodeQuality(code, fileName);
+      return toolResult(
+        result,
+        `Diagnosed ${result.smells.length} smell(s) with maintainability index ${result.metrics.maintainabilityIndex}/100.`,
+      );
+    },
+  );
+
+  server.registerTool(
+    TOOL_NAMES[9],
+    {
+      title: "Synthesize pattern refactoring scaffold",
+      description:
+        "Generate concrete TypeScript refactoring code, domain port interfaces, adapter implementations, step-by-step migration seams, and verification tests.",
+      inputSchema: synthesizeRefactoringInputSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ pattern }) => {
+      const result = intelligence.synthesizeRefactoring(pattern);
+      return toolResult(
+        result,
+        `Generated ${result.patternName} refactoring scaffold with ${result.files.length} files.`,
       );
     },
   );
