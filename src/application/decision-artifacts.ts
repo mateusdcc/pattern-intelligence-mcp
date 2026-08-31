@@ -1,6 +1,7 @@
 import type { DecisionAnalysis, PatternAssessment } from "../domain/decision.js";
-import type { Cost, PatternLayer } from "../domain/pattern.js";
-import type { PatternIntelligence } from "./pattern-intelligence.js";
+import { buildRejectionMatrixEntry } from "../engine/tipping-points.js";
+
+export { type GraphQueryResult, queryGraph } from "./graph-query.js";
 
 export interface AdoptionPlan {
   readonly pattern: string;
@@ -13,17 +14,6 @@ export interface AdoptionPlan {
     exitCriteria: readonly string[];
     rollback: string;
   }[];
-}
-
-export interface GraphQueryResult {
-  readonly nodes: readonly {
-    id: string;
-    name: string;
-    layer: PatternLayer;
-    adoptionCost: Cost;
-    reason: string;
-  }[];
-  readonly edges: readonly { from: string; to: string; relation: "related" }[];
 }
 
 export function buildAdoptionPlan(assessment: PatternAssessment): AdoptionPlan {
@@ -79,15 +69,78 @@ export function buildAdoptionPlan(assessment: PatternAssessment): AdoptionPlan {
   };
 }
 
+function formatAdrDecision(
+  analysis: DecisionAnalysis,
+  primary: PatternAssessment | undefined,
+): string {
+  if (analysis.recommendation === "adopt-patterns" && primary) {
+    return `Adopt ${primary.pattern.name} as a bounded, reversible experiment.`;
+  }
+  if (analysis.recommendation === "prefer-direct-solution") {
+    return "Keep the implementation direct; no pattern is justified by current evidence.";
+  }
+  return "Defer the pattern decision until the listed evidence is collected.";
+}
+
+function buildAdrRejectionSection(analysis: DecisionAnalysis): readonly string[] {
+  const rejected =
+    analysis.rejectedPatterns.length > 0
+      ? analysis.rejectedPatterns
+      : analysis.recommendation === "prefer-direct-solution"
+        ? analysis.patterns
+        : [];
+  if (rejected.length === 0) return [];
+  const entries = rejected.map((r) =>
+    buildRejectionMatrixEntry(
+      r.pattern,
+      r.score,
+      r.scoreBreakdown.contradictionPenalty,
+      r.liabilities.length > 0 ? r.liabilities : r.why,
+      analysis.normalizedCase.team?.size,
+    ),
+  );
+  return [
+    "## Anti-Pattern Rejection Matrix",
+    "",
+    "| Pattern | Qualification | Rejection Reason | Direct Baseline | Revisit Tipping Point |",
+    "| :--- | :--- | :--- | :--- | :--- |",
+    ...entries.map(
+      (e) =>
+        `| ${e.pattern} | ${e.qualification.toUpperCase()} | ${e.reason} | ${e.directBaseline} | ${e.tippingPoint} |`,
+    ),
+    "",
+  ];
+}
+
+function buildAdrReversalTriggers(analysis: DecisionAnalysis): readonly string[] {
+  const primary = analysis.patterns[0];
+  if (analysis.recommendation === "prefer-direct-solution") {
+    const rejected =
+      analysis.rejectedPatterns.length > 0 ? analysis.rejectedPatterns : analysis.patterns;
+    const entries = rejected.map((r) =>
+      buildRejectionMatrixEntry(
+        r.pattern,
+        r.score,
+        r.scoreBreakdown.contradictionPenalty,
+        r.liabilities.length > 0 ? r.liabilities : r.why,
+        analysis.normalizedCase.team?.size,
+      ),
+    );
+    return entries.map((e) => `- Revisit ${e.pattern} when: ${e.tippingPoint}.`);
+  }
+  return (
+    primary?.evidencePlan.removeWhen.map((trigger) => `- ${trigger}`) ?? [
+      "- The forces remain unverified.",
+    ]
+  );
+}
+
 export function buildAdr(title: string, analysis: DecisionAnalysis): string {
   const primary = analysis.patterns[0];
   const options = analysis.patterns.slice(0, 4);
-  const decision =
-    analysis.recommendation === "adopt-patterns" && primary
-      ? `Adopt ${primary.pattern.name} as a bounded, reversible experiment.`
-      : analysis.recommendation === "prefer-direct-solution"
-        ? "Keep the implementation direct; no pattern is justified by current evidence."
-        : "Defer the pattern decision until the listed evidence is collected.";
+  const decision = formatAdrDecision(analysis, primary);
+  const rejectionSection = buildAdrRejectionSection(analysis);
+  const reversalTriggers = buildAdrReversalTriggers(analysis);
 
   return [
     `# ADR: ${title}`,
@@ -105,10 +158,11 @@ export function buildAdr(title: string, analysis: DecisionAnalysis): string {
     "",
     decision,
     "",
+    ...rejectionSection,
     "## Considered options",
     "",
     ...options.flatMap((option) => [
-      `### ${option.pattern.name} — ${option.score}/100`,
+      `### ${option.pattern.name} - ${option.score}/100`,
       "",
       `Fit: ${option.why.join(" ") || "No strong contextual signal."}`,
       "",
@@ -125,74 +179,11 @@ export function buildAdr(title: string, analysis: DecisionAnalysis): string {
     "",
     "## Reversal triggers",
     "",
-    ...(primary?.evidencePlan.removeWhen.map((trigger) => `- ${trigger}`) ?? [
-      "- The forces remain unverified.",
-    ]),
+    ...reversalTriggers,
     "",
     "## Open questions",
     "",
     ...analysis.questions.map((question) => `- ${question}`),
     "",
   ].join("\n");
-}
-
-export function queryGraph(
-  intelligence: PatternIntelligence,
-  input: {
-    text?: string | undefined;
-    seedPatterns?: readonly string[] | undefined;
-    layers?: readonly PatternLayer[] | undefined;
-    maxAdoptionCost?: Cost | undefined;
-    limit?: number | undefined;
-  },
-): GraphQueryResult {
-  if (!input.text && (input.seedPatterns?.length ?? 0) === 0) {
-    throw new Error("Supply problem text, at least one seed pattern, or both.");
-  }
-
-  const costRank: Readonly<Record<Cost, number>> = { low: 0, medium: 1, high: 2 };
-  const limit = Math.min(Math.max(input.limit ?? 12, 1), 30);
-  const candidates = new Map<string, string>();
-
-  if (input.text) {
-    const ranked = intelligence.analyze({ problem: input.text }, limit).patterns;
-    for (const assessment of ranked) {
-      candidates.set(assessment.pattern.id, `Contextual score ${assessment.score}/100.`);
-    }
-  }
-
-  for (const value of input.seedPatterns ?? []) {
-    const seed = intelligence.store.findByNameOrId(value);
-    if (!seed) throw new Error(`Unknown pattern: ${value}`);
-    candidates.set(seed.id, "Explicit seed.");
-    for (const related of intelligence.store.relatedTo(seed.id)) {
-      candidates.set(related.id, `Related to ${seed.name}.`);
-    }
-  }
-
-  const allowedCost = costRank[input.maxAdoptionCost ?? "high"];
-  const nodes = [...candidates]
-    .map(([id, reason]) => ({ pattern: intelligence.store.require(id), reason }))
-    .filter(
-      ({ pattern }) =>
-        (!input.layers || input.layers.includes(pattern.layer)) &&
-        costRank[pattern.adoptionCost] <= allowedCost,
-    )
-    .slice(0, limit)
-    .map(({ pattern, reason }) => ({
-      id: pattern.id,
-      name: pattern.name,
-      layer: pattern.layer,
-      adoptionCost: pattern.adoptionCost,
-      reason,
-    }));
-  const nodeIds = new Set(nodes.map((node) => node.id));
-  const edges = nodes.flatMap((node) =>
-    intelligence.store
-      .require(node.id)
-      .related.filter((relatedId) => nodeIds.has(relatedId) && node.id < relatedId)
-      .map((relatedId) => ({ from: node.id, to: relatedId, relation: "related" as const })),
-  );
-
-  return { nodes, edges };
 }

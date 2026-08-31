@@ -176,3 +176,84 @@ describe("decision benchmark", () => {
     });
   }
 });
+
+describe("tipping points and direct baselines", () => {
+  const intelligence = new PatternIntelligence();
+
+  const complexPatterns = [
+    {
+      id: "cqrs",
+      expectedTippingPoint: "> 5,000 writes/sec",
+      expectedBaseline: "Relational tables with indexed views",
+    },
+    {
+      id: "event-sourcing",
+      expectedTippingPoint: "Strict regulatory audit requirement",
+      expectedBaseline: "State-based relational persistence with an append-only audit log table",
+    },
+    {
+      id: "modular-monolith",
+      expectedTippingPoint: "> 15 engineers across 3 squads",
+      expectedBaseline: "Single modular monolith codebase",
+    },
+    {
+      id: "space-based-architecture",
+      expectedTippingPoint: "> 100,000 writes/sec",
+      expectedBaseline: "Relational database with read replicas",
+    },
+    {
+      id: "cell-based-architecture",
+      expectedTippingPoint: "> 1,000,000 active tenants",
+      expectedBaseline: "Multi-tenant deployment with logical tenant partitioning",
+    },
+    {
+      id: "sharding",
+      expectedTippingPoint: "> 5 TB database storage",
+      expectedBaseline: "Vertical database scaling",
+    },
+    {
+      id: "saga",
+      expectedTippingPoint: "Multi-service workflow spanning >= 3 distributed databases",
+      expectedBaseline: "Single-database local ACID transaction",
+    },
+    {
+      id: "singleton",
+      expectedTippingPoint: "Stateless pure constants",
+      expectedBaseline: "Dependency injection or explicit Composition Root",
+    },
+    {
+      id: "semantic-cache",
+      expectedTippingPoint: "> 50,000 natural language queries/day",
+      expectedBaseline: "Exact-match key-value cache",
+    },
+    {
+      id: "model-router",
+      expectedTippingPoint: "> 10,000 prompt classifications/day",
+      expectedBaseline: "Static single-model configuration",
+    },
+  ] as const;
+
+  for (const item of complexPatterns) {
+    it(`provides concrete tipping points and direct baseline for ${item.id}`, () => {
+      const pattern = intelligence.store.require(item.id);
+      expect(pattern).toBeDefined();
+
+      const findings = intelligence.detectMisuse(
+        {
+          problem: "A simple internal CRUD application with 2 developers.",
+          team: { size: 2, operationsCapacity: "limited" },
+          complexityBudget: "minimal",
+        },
+        [pattern.id],
+      );
+
+      expect(findings).toHaveLength(1);
+      const finding = findings[0];
+      expect(finding?.tippingPoint).toContain(item.expectedTippingPoint);
+      expect(finding?.alternatives[0]).toContain(item.expectedBaseline);
+      expect(["contraindicated", "overkill", "premature", "unnecessary"]).toContain(
+        finding?.qualification,
+      );
+    });
+  }
+});
