@@ -15,6 +15,11 @@ import {
 import { analyzeCodeQuality } from "../engine/code-quality-analyzer.js";
 import { refactorCodeSmell, type SmellRefactorResult } from "../engine/code-smell-refactorer.js";
 import { ComparisonEngine } from "../engine/comparison-engine.js";
+import {
+  type ArchitectureFitnessRules,
+  type FitnessRulesOptions,
+  generateFitnessRules,
+} from "../engine/fitness-rules-generator.js";
 import { MisuseDetector } from "../engine/misuse-detector.js";
 import { RecommendationEngine } from "../engine/recommendation-engine.js";
 import {
@@ -83,5 +88,9 @@ export class PatternIntelligence {
 
   public refactorSmell(code: string, fileName?: string): SmellRefactorResult {
     return refactorCodeSmell(code, fileName);
+  }
+
+  public generateFitnessRules(options?: FitnessRulesOptions | string): ArchitectureFitnessRules {
+    return generateFitnessRules(options, this.#recommendations);
   }
 }

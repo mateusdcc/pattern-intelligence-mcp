@@ -58,3 +58,16 @@ export const refactorSmellInputSchema = z.object({
   code: z.string().min(5),
   fileName: z.string().optional().default("component.ts"),
 });
+
+export const fitnessRulesInputSchema = z.object({
+  patternName: z
+    .string()
+    .optional()
+    .describe("Pattern name or boundary to generate fitness rules for."),
+  pattern: z.string().optional().describe("Alternative pattern name identifier."),
+  case: designCaseSchema
+    .optional()
+    .describe("Design case context to diagnose pattern and boundaries."),
+  designCase: designCaseSchema.optional().describe("Alternative design case input."),
+  framework: z.enum(["vitest", "ts-arch", "eslint", "all"]).optional().default("all"),
+});

@@ -102,6 +102,18 @@ describe("MCP surface", () => {
         name: "query_pattern_graph",
         arguments: { text: designCase.problem, seedPatterns: ["Strategy"], limit: 8 },
       },
+      {
+        name: "diagnose_code_quality",
+        arguments: { code: "class Svc { execute() {} }", fileName: "svc.ts" },
+      },
+      {
+        name: "synthesize_pattern_refactoring",
+        arguments: { pattern: "Transactional Outbox" },
+      },
+      {
+        name: "generate_architecture_fitness_rules",
+        arguments: { patternName: "Ports & Adapters", framework: "vitest" },
+      },
     ] as const;
 
     for (const call of calls) {
@@ -146,5 +158,33 @@ describe("MCP surface", () => {
     expect(
       result.messages[0]?.content.type === "text" ? result.messages[0].content.text : "",
     ).toContain("detect_pattern_misuse");
+  });
+
+  it("generates architectural fitness rules via MCP tool call", async () => {
+    const result = await client.callTool({
+      name: "generate_architecture_fitness_rules",
+      arguments: {
+        patternName: "Ports & Adapters",
+        framework: "vitest",
+      },
+    });
+
+    expect(result.isError).not.toBe(true);
+    const content = result.structuredContent as
+      | {
+          result: {
+            patternName: string;
+            eslintRules: { config: string };
+            files: unknown[];
+            ciCommands: { commands: string[] };
+          };
+        }
+      | undefined;
+    expect(content?.result.patternName).toContain("Ports & Adapters");
+    expect(content?.result.eslintRules.config).toContain(
+      "@typescript-eslint/no-restricted-imports",
+    );
+    expect(content?.result.files.length).toBeGreaterThanOrEqual(3);
+    expect(content?.result.ciCommands.commands.length).toBeGreaterThanOrEqual(1);
   });
 });

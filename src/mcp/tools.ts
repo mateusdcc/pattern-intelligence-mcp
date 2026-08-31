@@ -7,6 +7,7 @@ import {
   analyzeInputSchema,
   codeQualityInputSchema,
   compareInputSchema,
+  fitnessRulesInputSchema,
   graphInputSchema,
   misuseInputSchema,
   patternDecisionInputSchema,
@@ -29,6 +30,7 @@ export const TOOL_NAMES = [
   "query_pattern_graph",
   "diagnose_code_quality",
   "synthesize_pattern_refactoring",
+  "generate_architecture_fitness_rules",
 ] as const;
 
 const READ_ONLY = {
@@ -243,6 +245,21 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
         result,
         `Generated ${result.patternName} refactoring scaffold with ${result.files.length} files.`,
       );
+    },
+  );
+
+  server.registerTool(
+    TOOL_NAMES[12],
+    {
+      title: "Generate architectural fitness rules and tests",
+      description:
+        "Generates automated ESLint import boundary configurations, Vitest / TS-Arch architectural fitness test suites, and CI verification commands to enforce design boundaries and prevent layer contamination.",
+      inputSchema: fitnessRulesInputSchema,
+      annotations: READ_ONLY,
+    },
+    async (input) => {
+      const result = intelligence.generateFitnessRules(input);
+      return toolResult(result, result.markdownSummary);
     },
   );
 }
