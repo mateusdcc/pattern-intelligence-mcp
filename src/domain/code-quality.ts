@@ -28,6 +28,10 @@ export interface CodeQualityMetrics {
   readonly couplingScore: number;
   readonly cohesionScore: number;
   readonly maintainabilityIndex: number;
+  readonly afferentCoupling: number;
+  readonly efferentCoupling: number;
+  readonly instabilityIndex: number;
+  readonly lcom4Score: number;
 }
 
 export interface CodeQualityReport {
@@ -36,4 +40,10 @@ export interface CodeQualityReport {
   readonly problemStatement: string;
   readonly detectedForces: readonly string[];
   readonly recommendedAction: "refactor-with-patterns" | "keep-direct-solution" | "gather-metrics";
+}
+
+export interface MetricComparison {
+  readonly before: CodeQualityMetrics;
+  readonly projectedAfter: CodeQualityMetrics;
+  readonly improvementPercentage: number;
 }
