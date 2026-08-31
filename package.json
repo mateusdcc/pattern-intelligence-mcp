@@ -5,6 +5,14 @@
   "type": "module",
   "author": "Mateusdcc",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mateusdcc/pattern-intelligence-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mateusdcc/pattern-intelligence-mcp/issues"
+  },
+  "homepage": "https://github.com/mateusdcc/pattern-intelligence-mcp#readme",
   "sideEffects": false,
   "keywords": [
     "mcp",
