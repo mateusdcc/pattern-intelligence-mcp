@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 
 import { catalogSchema, type PatternCatalog } from "../domain/pattern.js";
+import { validatePatternRelationships } from "./ontology.js";
 
 const catalogUrl = new URL("../../knowledge/patterns.json", import.meta.url);
 
@@ -17,6 +18,11 @@ export function loadCatalog(): PatternCatalog {
   const ids = new Set(catalog.patterns.map((pattern) => pattern.id));
   if (ids.size !== catalog.patterns.length) {
     throw new Error("Pattern IDs must be unique.");
+  }
+
+  const errors = validatePatternRelationships(catalog.patterns);
+  if (errors.length > 0) {
+    throw new Error(`Invalid pattern relationships:\n${errors.join("\n")}`);
   }
 
   return catalog;

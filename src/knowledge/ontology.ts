@@ -1,3 +1,5 @@
+import type { Pattern } from "../domain/pattern.js";
+
 export interface ConceptRule {
   readonly id: string;
   readonly description: string;
@@ -374,4 +376,210 @@ export const CONCEPT_RULES: readonly ConceptRule[] = [
       "data-transfer-object": 3,
     },
   },
+  {
+    id: "ai-model-routing",
+    description:
+      "Prompts with varying complexity, latency, and cost need dynamic dispatch to suitable LLMs.",
+    signals: [
+      "llm routing",
+      "model router",
+      "model cascade",
+      "cost vs latency",
+      "dynamic model dispatch",
+      "prompt complexity",
+    ],
+    boosts: { "model-router": 10, strategy: 4, "semantic-cache": 3 },
+  },
+  {
+    id: "agent-tool-fault-tolerance",
+    description:
+      "Unreliable or failing external tool executions must be isolated to prevent agent failure.",
+    signals: [
+      "agent tool failure",
+      "tool execution fault",
+      "tool circuit breaker",
+      "flaky tool",
+      "function calling failure",
+    ],
+    boosts: { "tool-circuit-breaker": 10, "circuit-breaker": 6, bulkhead: 4 },
+  },
+  {
+    id: "semantic-similarity-caching",
+    description:
+      "Paraphrased or semantically equivalent natural language prompts should reuse cached LLM completions.",
+    signals: [
+      "semantic cache",
+      "embedding cache",
+      "vector cache",
+      "prompt similarity",
+      "paraphrased query",
+      "cache llm response",
+    ],
+    boosts: { "semantic-cache": 10, "cache-aside": 5, "model-router": 3 },
+  },
+  {
+    id: "cache-stampede-coalescing",
+    description:
+      "Concurrent requests for the same missing key or expensive computation must not duplicate downstream execution.",
+    signals: [
+      "thundering herd",
+      "cache stampede",
+      "duplicate in-flight",
+      "request coalescing",
+      "singleflight",
+      "stampede lock",
+    ],
+    boosts: {
+      singleflight: 9,
+      "cache-aside-stampede-lock": 9,
+      "cache-aside": 6,
+      mutex: 4,
+    },
+  },
+  {
+    id: "bursty-traffic-shaping",
+    description: "Traffic streams require bounded rate limiting with burst tolerance.",
+    signals: [
+      "token bucket",
+      "bursty traffic",
+      "rate limit burst",
+      "traffic shaping",
+      "refill rate",
+    ],
+    boosts: {
+      "token-bucket-rate-limiter": 10,
+      "rate-limiter": 7,
+      semaphore: 4,
+    },
+  },
 ] as const;
+
+export const RELATIONSHIP_TYPES = [
+  "complements",
+  "prerequisiteFor",
+  "mitigatesLiabilityOf",
+  "conflictsWith",
+] as const;
+
+export type PatternRelationshipType = (typeof RELATIONSHIP_TYPES)[number];
+
+export interface RelationshipCategory {
+  readonly type: PatternRelationshipType;
+  readonly name: string;
+  readonly description: string;
+}
+
+export const RELATIONSHIP_CATEGORIES: readonly RelationshipCategory[] = [
+  {
+    type: "complements",
+    name: "Complements",
+    description: "Patterns that work synergistically when combined together.",
+  },
+  {
+    type: "prerequisiteFor",
+    name: "Prerequisite For",
+    description: "Pattern that should or must be established before adopting the target pattern.",
+  },
+  {
+    type: "mitigatesLiabilityOf",
+    name: "Mitigates Liability Of",
+    description:
+      "Pattern that directly alleviates liabilities or failure modes introduced by the target pattern.",
+  },
+  {
+    type: "conflictsWith",
+    name: "Conflicts With",
+    description:
+      "Patterns that represent opposing architectural approaches or mutually exclusive mechanisms.",
+  },
+];
+
+export function isRelationshipType(value: string): value is PatternRelationshipType {
+  return (RELATIONSHIP_TYPES as readonly string[]).includes(value);
+}
+
+export function getRelationshipCategory(
+  type: PatternRelationshipType,
+): RelationshipCategory | undefined {
+  return RELATIONSHIP_CATEGORIES.find((category) => category.type === type);
+}
+
+export function validatePatternRelationships(patterns: readonly Pattern[]): readonly string[] {
+  const knownIds = new Set(patterns.map((p) => p.id));
+  return patterns.flatMap((pattern) => validateSinglePattern(pattern, knownIds));
+}
+
+function validateSinglePattern(pattern: Pattern, knownIds: ReadonlySet<string>): readonly string[] {
+  return RELATIONSHIP_TYPES.flatMap((relType) =>
+    validateRelationTargets(pattern.id, relType, pattern[relType] ?? [], knownIds),
+  );
+}
+
+function validateRelationTargets(
+  id: string,
+  type: PatternRelationshipType,
+  targets: readonly string[],
+  knownIds: ReadonlySet<string>,
+): readonly string[] {
+  const seen = new Set<string>();
+  const errors: string[] = [];
+  for (const target of targets) {
+    if (!knownIds.has(target))
+      errors.push(`Pattern '${id}' has ${type} targeting unknown pattern '${target}'.`);
+    if (target === id) errors.push(`Pattern '${id}' cannot have ${type} targeting itself.`);
+    if (seen.has(target)) errors.push(`Pattern '${id}' has duplicate ${type} link to '${target}'.`);
+    seen.add(target);
+  }
+  return errors;
+}
+
+export function findPrerequisites(
+  patterns: readonly Pattern[],
+  targetId: string,
+): readonly string[] {
+  return patterns.filter((p) => (p.prerequisiteFor ?? []).includes(targetId)).map((p) => p.id);
+}
+
+export function findMitigatingPatterns(
+  patterns: readonly Pattern[],
+  targetId: string,
+): readonly string[] {
+  return patterns.filter((p) => (p.mitigatesLiabilityOf ?? []).includes(targetId)).map((p) => p.id);
+}
+
+export function findConflictingPatterns(
+  patterns: readonly Pattern[],
+  patternId: string,
+): readonly string[] {
+  const pattern = patterns.find((p) => p.id === patternId);
+  const direct = pattern?.conflictsWith ?? [];
+  const incoming = patterns
+    .filter((p) => (p.conflictsWith ?? []).includes(patternId))
+    .map((p) => p.id);
+  return Array.from(new Set([...direct, ...incoming]));
+}
+
+export function findComplementaryPatterns(
+  patterns: readonly Pattern[],
+  patternId: string,
+): readonly string[] {
+  const pattern = patterns.find((p) => p.id === patternId);
+  const direct = pattern?.complements ?? [];
+  const incoming = patterns
+    .filter((p) => (p.complements ?? []).includes(patternId))
+    .map((p) => p.id);
+  return Array.from(new Set([...direct, ...incoming]));
+}
+
+export function queryRelationships(
+  patterns: readonly Pattern[],
+  patternId: string,
+  type: PatternRelationshipType,
+): readonly string[] {
+  if (type === "complements") return findComplementaryPatterns(patterns, patternId);
+  if (type === "prerequisiteFor")
+    return patterns.find((p) => p.id === patternId)?.prerequisiteFor ?? [];
+  if (type === "mitigatesLiabilityOf")
+    return patterns.find((p) => p.id === patternId)?.mitigatesLiabilityOf ?? [];
+  return findConflictingPatterns(patterns, patternId);
+}

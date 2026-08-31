@@ -11,6 +11,7 @@ export const patternLayerSchema = z.enum([
   "concurrency",
   "testing",
   "architecture",
+  "ai-agent",
 ]);
 
 export const costSchema = z.enum(["low", "medium", "high"]);
@@ -30,6 +31,10 @@ export const patternSchema = z.object({
   typescript: z.string().min(1),
   related: z.array(z.string()),
   relatedConcepts: z.array(z.string()),
+  complements: z.array(z.string()).optional(),
+  prerequisiteFor: z.array(z.string()).optional(),
+  mitigatesLiabilityOf: z.array(z.string()).optional(),
+  conflictsWith: z.array(z.string()).optional(),
   adoptionCost: costSchema,
   operationalCost: costSchema,
   level: z.enum(["core", "advanced"]),
