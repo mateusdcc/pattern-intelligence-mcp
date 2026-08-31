@@ -15,7 +15,15 @@ export type {
   SmellKind,
   SmellSeverity,
 } from "./domain/code-quality.js";
+export {
+  type ArchitecturePrescription,
+  prescribeArchitecture,
+} from "./engine/architecture-prescriber.js";
 export { analyzeCodeQuality } from "./engine/code-quality-analyzer.js";
+export {
+  refactorCodeSmell,
+  type SmellRefactorResult,
+} from "./engine/code-smell-refactorer.js";
 export {
   type RefactoringScaffold,
   synthesizeRefactoring,

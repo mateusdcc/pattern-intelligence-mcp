@@ -49,3 +49,12 @@ export const codeQualityInputSchema = z.object({
 export const synthesizeRefactoringInputSchema = z.object({
   pattern: z.string().min(2),
 });
+
+export const prescribeArchitectureInputSchema = z.object({
+  case: designCaseSchema,
+});
+
+export const refactorSmellInputSchema = z.object({
+  code: z.string().min(5),
+  fileName: z.string().optional().default("component.ts"),
+});

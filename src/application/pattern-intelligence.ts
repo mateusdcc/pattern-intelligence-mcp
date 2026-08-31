@@ -8,7 +8,12 @@ import type {
   StressTestResult,
 } from "../domain/decision.js";
 import type { DesignCaseInput } from "../domain/design-case.js";
+import {
+  type ArchitecturePrescription,
+  prescribeArchitecture,
+} from "../engine/architecture-prescriber.js";
 import { analyzeCodeQuality } from "../engine/code-quality-analyzer.js";
+import { refactorCodeSmell, type SmellRefactorResult } from "../engine/code-smell-refactorer.js";
 import { ComparisonEngine } from "../engine/comparison-engine.js";
 import { MisuseDetector } from "../engine/misuse-detector.js";
 import { RecommendationEngine } from "../engine/recommendation-engine.js";
@@ -69,5 +74,14 @@ export class PatternIntelligence {
 
   public synthesizeRefactoring(patternName: string): RefactoringScaffold {
     return synthesizeRefactoring(patternName);
+  }
+
+  public prescribe(input: DesignCaseInput): ArchitecturePrescription {
+    const analysis = this.#recommendations.analyze(input);
+    return prescribeArchitecture(analysis, input);
+  }
+
+  public refactorSmell(code: string, fileName?: string): SmellRefactorResult {
+    return refactorCodeSmell(code, fileName);
   }
 }

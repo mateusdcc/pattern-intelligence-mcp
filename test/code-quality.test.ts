@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { PatternIntelligence } from "../src/application/pattern-intelligence.js";
 import { analyzeCodeQuality } from "../src/engine/code-quality-analyzer.js";
+import { refactorCodeSmell } from "../src/engine/code-smell-refactorer.js";
 import { synthesizeRefactoring } from "../src/engine/refactoring-synthesizer.js";
 
 describe("Code Quality & Smell Analyzer", () => {
@@ -48,7 +50,7 @@ describe("Code Quality & Smell Analyzer", () => {
   });
 });
 
-describe("Refactoring Synthesizer", () => {
+describe("Refactoring Synthesizer & Code Smell Refactorer", () => {
   it("synthesizes adapter scaffold", () => {
     const scaffold = synthesizeRefactoring("Adapter");
     expect(scaffold.patternName).toContain("Adapter");
@@ -60,5 +62,29 @@ describe("Refactoring Synthesizer", () => {
     const scaffold = synthesizeRefactoring("Transactional Outbox");
     expect(scaffold.patternName).toContain("Outbox");
     expect(scaffold.files.some((f) => f.path.includes("outbox"))).toBe(true);
+  });
+
+  it("refactors code smell with end-to-end markdown", () => {
+    const code = `
+      async function book(req) {
+        await db.payments.save(req);
+        await kafka.emit("pay", req);
+      }
+    `;
+    const result = refactorCodeSmell(code, "booking.ts");
+    expect(result.report.smells.length).toBeGreaterThan(0);
+    expect(result.markdownSummary).toContain("Transactional Outbox");
+  });
+
+  it("prescribes architecture blueprint in single call", () => {
+    const intelligence = new PatternIntelligence();
+    const prescription = intelligence.prescribe({
+      problem:
+        "Three third-party carrier APIs expose incompatible interfaces and leak vendor models inward.",
+      evidence: ["provider types appear in 19 domain files"],
+    });
+    expect(prescription.primaryPattern).toMatch(/Adapter|Anti-Corruption Layer/i);
+    expect(prescription.scaffold.files.length).toBeGreaterThan(0);
+    expect(prescription.markdownSummary).toContain("Proposed Code Structure");
   });
 });

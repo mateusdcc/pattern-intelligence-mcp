@@ -10,11 +10,15 @@ import {
   graphInputSchema,
   misuseInputSchema,
   patternDecisionInputSchema,
+  prescribeArchitectureInputSchema,
+  refactorSmellInputSchema,
   stressTestInputSchema,
   synthesizeRefactoringInputSchema,
 } from "./tool-schemas.js";
 
 export const TOOL_NAMES = [
+  "prescribe_architecture",
+  "refactor_code_smell",
   "analyze_design_case",
   "compare_pattern_options",
   "detect_pattern_misuse",
@@ -38,6 +42,36 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   server.registerTool(
     TOOL_NAMES[0],
     {
+      title: "Prescribe architecture and refactoring blueprint",
+      description:
+        "Unified architectural prescription engine: performs force diagnosis, anti-cargo-cult evaluation, and generates concrete domain port interfaces, infrastructure adapters, migration seams, and rollback triggers in a single call.",
+      inputSchema: prescribeArchitectureInputSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ case: designCase }) => {
+      const result = intelligence.prescribe(designCase);
+      return toolResult(result, result.markdownSummary);
+    },
+  );
+
+  server.registerTool(
+    TOOL_NAMES[1],
+    {
+      title: "Refactor code smell into clean architecture",
+      description:
+        "Analyzes source code for architectural smells (God Class, Dual-Write, Missing Timeout, Leaky Abstraction, Concurrency), computes complexity metrics, and synthesizes refactored Clean Code TypeScript modules.",
+      inputSchema: refactorSmellInputSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ code, fileName }) => {
+      const result = intelligence.refactorSmell(code, fileName);
+      return toolResult(result, result.markdownSummary);
+    },
+  );
+
+  server.registerTool(
+    TOOL_NAMES[2],
+    {
       title: "Analyze a design case",
       description:
         "Diagnose forces before prescribing a pattern. Returns questions, transparent scores, rejected patterns, a non-pattern baseline, evidence plans, and a bounded pattern compound. Use this first for an open-ended design problem.",
@@ -52,7 +86,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[1],
+    TOOL_NAMES[3],
     {
       title: "Compare pattern options",
       description:
@@ -70,7 +104,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[2],
+    TOOL_NAMES[4],
     {
       title: "Detect pattern misuse",
       description:
@@ -86,11 +120,11 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[3],
+    TOOL_NAMES[5],
     {
       title: "Stress-test a pattern decision",
       description:
-        "Apply explicit counterfactual scenarios—scale, delivery, consistency, team, evidence, or goals—and report when the leading decision flips. Use before committing to expensive architecture.",
+        "Apply explicit counterfactual scenarios - scale, delivery, consistency, team, evidence, or goals - and report when the leading decision flips. Use before committing to expensive architecture.",
       inputSchema: stressTestInputSchema,
       annotations: READ_ONLY,
     },
@@ -105,7 +139,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[4],
+    TOOL_NAMES[6],
     {
       title: "Plan safe pattern adoption",
       description:
@@ -121,7 +155,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[5],
+    TOOL_NAMES[7],
     {
       title: "Write a pattern ADR",
       description:
@@ -137,7 +171,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[6],
+    TOOL_NAMES[8],
     {
       title: "Get a pattern evidence plan",
       description:
@@ -159,7 +193,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[7],
+    TOOL_NAMES[9],
     {
       title: "Query the pattern graph",
       description:
@@ -177,7 +211,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[8],
+    TOOL_NAMES[10],
     {
       title: "Diagnose code quality and smells",
       description:
@@ -195,7 +229,7 @@ export function registerTools(server: McpServer, intelligence: PatternIntelligen
   );
 
   server.registerTool(
-    TOOL_NAMES[9],
+    TOOL_NAMES[11],
     {
       title: "Synthesize pattern refactoring scaffold",
       description:

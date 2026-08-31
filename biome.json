@@ -8,6 +8,7 @@
       "!!node_modules",
       "!!knowledge/curriculum",
       "!!.archify",
+      "!!*.html",
       "!!benchmarks/pi-antigravity",
       "!!benchmarks/auth.json"
     ]

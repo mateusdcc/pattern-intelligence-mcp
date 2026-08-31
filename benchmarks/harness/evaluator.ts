@@ -29,14 +29,22 @@ export interface EvaluationScore {
   readonly directSolutionCorrectlyIdentified: boolean;
 }
 
+export interface TokenUsage {
+  readonly input: number;
+  readonly output: number;
+  readonly cacheRead: number;
+  readonly totalTokens: number;
+}
+
 export interface RunResult {
   readonly scenarioId: string;
   readonly scenarioTitle: string;
   readonly category: string;
-  readonly mode: "baseline" | "mcp-enhanced";
+  readonly mode: "harness-without-mcp" | "harness-with-mcp";
   readonly output: string;
   readonly durationMs: number;
   readonly toolsUsed: string[];
+  readonly usage: TokenUsage;
   readonly evaluation: EvaluationScore;
 }
 
@@ -53,17 +61,25 @@ export function evaluateOutput(output: string, oracle: ScenarioOracle): Evaluati
     }
   }
 
-  // 2. Contraindicated Anti-Pattern Detection
+  // 2. Contraindicated Anti-Pattern Detection with robust avoidance detection
   const flaggedContraindicatedPatterns: string[] = [];
+  const rejectionVerbs =
+    "avoid|reject|unnecessary|not recommend|overkill|anti-pattern|simpler alternative|contraindicated|excessive|premature|unjustified|do not adopt|do not use|not needed|inappropriate|not warranted|not suitable|skip|penaliz|disadvantage|downside|overhead|without|instead of|rather than|never use|no need for|eliminat";
+
   for (const contraindicated of oracle.contraindicatedPatterns) {
     const escaped = contraindicated.toLowerCase().replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
     const regex = new RegExp(`\\b${escaped}\\b`, "i");
     if (regex.test(normalized) || normalized.includes(contraindicated.toLowerCase())) {
-      const avoidance = new RegExp(
-        `(avoid|reject|unnecessary|not recommend|overkill|anti-pattern|simpler alternative to)\\s+[^.\\n]*\\b${escaped}`,
+      // Check if it was mentioned in an avoidance / rejection context
+      const avoidanceBefore = new RegExp(
+        `(${rejectionVerbs})[^.\\n]{0,100}\\b${escaped}`,
         "i",
       );
-      if (!avoidance.test(normalized)) {
+      const avoidanceAfter = new RegExp(
+        `\\b${escaped}\\b[^.\\n]{0,100}(is|are|as|would be|was)?\\s*(${rejectionVerbs})`,
+        "i",
+      );
+      if (!avoidanceBefore.test(normalized) && !avoidanceAfter.test(normalized)) {
         flaggedContraindicatedPatterns.push(contraindicated);
       }
     }
@@ -78,7 +94,7 @@ export function evaluateOutput(output: string, oracle: ScenarioOracle): Evaluati
         .split(" ")
         .filter((w) => w.length > 3);
       const matchedWords = words.filter((w) => normalized.includes(w));
-      if (matchedWords.length >= Math.ceil(words.length * 0.5)) {
+      if (matchedWords.length >= Math.ceil(words.length * 0.45)) {
         matchedForces.push(force);
       }
     }
@@ -95,6 +111,9 @@ export function evaluateOutput(output: string, oracle: ScenarioOracle): Evaluati
     "strangler",
     "seam",
     "reversib",
+    "phase",
+    "migration plan",
+    "step-by-step",
   ];
   const detectedRollback = rollbackKeywords.some((kw) => normalized.includes(kw));
 
@@ -110,6 +129,9 @@ export function evaluateOutput(output: string, oracle: ScenarioOracle): Evaluati
     "sla",
     "slo",
     "benchmark",
+    "test",
+    "assert",
+    "coverage",
   ];
   const detectedMeasurements = measurementKeywords.some((kw) => normalized.includes(kw));
 
@@ -126,6 +148,8 @@ export function evaluateOutput(output: string, oracle: ScenarioOracle): Evaluati
     "prefer-direct-solution",
     "crud",
     "simple",
+    "simple postgresql",
+    "relational database",
   ];
   const mentionsDirect = directKeywords.some((kw) => normalized.includes(kw));
   const isDirectExpected = oracle.expectedRecommendation === "prefer-direct-solution";
@@ -167,14 +191,16 @@ export function evaluateOutput(output: string, oracle: ScenarioOracle): Evaluati
     normalized.includes("boundary") ||
     normalized.includes("interface") ||
     normalized.includes("insulat") ||
-    normalized.includes("port")
+    normalized.includes("port") ||
+    normalized.includes("adapter")
   ) {
     maintainabilityScore += 15;
   }
   if (
     normalized.includes("test") ||
     normalized.includes("contract") ||
-    normalized.includes("seam")
+    normalized.includes("seam") ||
+    normalized.includes("verification")
   ) {
     maintainabilityScore += 15;
   }

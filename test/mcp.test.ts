@@ -56,6 +56,14 @@ describe("MCP surface", () => {
     };
     const calls = [
       {
+        name: "prescribe_architecture",
+        arguments: { case: designCase },
+      },
+      {
+        name: "refactor_code_smell",
+        arguments: { code: "async function calc(x) { return x * 2; }", fileName: "calc.ts" },
+      },
+      {
         name: "compare_pattern_options",
         arguments: { case: designCase, patterns: ["Strategy", "Template Method"] },
       },

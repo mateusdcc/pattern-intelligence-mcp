@@ -1,8 +1,8 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 
-import { buildAdoptionPlan, buildAdr, PatternIntelligence, queryGraph } from "../../dist/index.js";
 import type { DesignCaseInput, ScenarioMutation } from "../../src/domain/design-case.js";
+import { buildAdoptionPlan, buildAdr, PatternIntelligence, queryGraph } from "../../src/index.js";
 
 export default function patternIntelligenceExtension(pi: ExtensionAPI): void {
   const intelligence = new PatternIntelligence();
@@ -11,8 +11,78 @@ export default function patternIntelligenceExtension(pi: ExtensionAPI): void {
   pi.on("before_agent_start", async (_event) => {
     return {
       systemPrompt:
-        "CRITICAL ARCHITECTURAL DIRECTIVE: You have access to the Pattern Intelligence MCP tools (`analyze_design_case`, `compare_pattern_options`, `detect_pattern_misuse`, `diagnose_code_quality`, `synthesize_pattern_refactoring`, `write_pattern_adr`). When facing any architectural decisions, refactoring, code quality, design patterns, or evaluating system tradeoffs, ALWAYS call `analyze_design_case`, `diagnose_code_quality`, or `compare_pattern_options` first to extract deterministic forces, complexity penalties, and verify whether a direct solution or pattern is justified with evidence before answering.",
+        "CRITICAL ARCHITECTURAL DIRECTIVE: You have access to Pattern Intelligence MCP tools. When asked to architect, refactor, or evaluate design decisions, ALWAYS invoke `prescribe_architecture` or `refactor_code_smell` first. It returns a verified architectural blueprint containing the verdict, domain ports, infrastructure adapters, migration seams, and rollback triggers in a single call.",
     };
+  });
+
+  pi.registerTool({
+    name: "prescribe_architecture",
+    label: "Prescribe Architecture",
+    description:
+      "Unified architectural prescription engine: performs deterministic force analysis, anti-cargo-cult checks, and generates domain port interfaces, infrastructure adapters, rollout seams, and rollback triggers in a single call.",
+    promptSnippet:
+      "Prescribe verified architecture, domain ports, adapters, and rollback triggers for a design problem",
+    promptGuidelines: [
+      "Use prescribe_architecture first whenever facing an architectural decision, service boundary design, or pattern selection.",
+    ],
+    parameters: Type.Object({
+      case: Type.Object({
+        problem: Type.String({ description: "Concrete problem and system context statement" }),
+        goals: Type.Optional(Type.Array(Type.String())),
+        failureModes: Type.Optional(Type.Array(Type.String())),
+        changeAxes: Type.Optional(Type.Array(Type.String())),
+        scale: Type.Optional(
+          Type.Object({
+            throughput: Type.Optional(Type.String()),
+            dataVolume: Type.Optional(Type.String()),
+            latencyRequirement: Type.Optional(Type.String()),
+          }),
+        ),
+        statefulness: Type.Optional(Type.String()),
+        delivery: Type.Optional(Type.String()),
+        consistency: Type.Optional(Type.String()),
+        concurrency: Type.Optional(Type.String()),
+        complexityBudget: Type.Optional(Type.String()),
+        riskTolerance: Type.Optional(Type.String()),
+        team: Type.Optional(
+          Type.Object({
+            size: Type.Optional(Type.String()),
+            experience: Type.Optional(Type.String()),
+            operationsCapacity: Type.Optional(Type.String()),
+          }),
+        ),
+        evidence: Type.Optional(Type.Array(Type.String())),
+      }),
+    }),
+    async execute(_id, params) {
+      const result = intelligence.prescribe(params.case as unknown as DesignCaseInput);
+      return {
+        content: [{ type: "text", text: result.markdownSummary }],
+        details: { verdict: result.verdict, pattern: result.primaryPattern },
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "refactor_code_smell",
+    label: "Refactor Code Smell",
+    description:
+      "Analyzes code for architectural smells (God Class, Dual-Write, Missing Timeout, Leaky Abstraction, Concurrency), computes complexity metrics, and synthesizes refactored Clean Code TypeScript modules.",
+    promptSnippet: "Diagnose code smells and generate refactored Clean Code TypeScript modules",
+    parameters: Type.Object({
+      code: Type.String({ description: "Source code to refactor" }),
+      fileName: Type.Optional(Type.String()),
+    }),
+    async execute(_id, params) {
+      const result = intelligence.refactorSmell(params.code, params.fileName);
+      return {
+        content: [{ type: "text", text: result.markdownSummary }],
+        details: {
+          pattern: result.recommendedPattern,
+          maintainabilityIndex: result.report.metrics.maintainabilityIndex,
+        },
+      };
+    },
   });
 
   pi.registerTool({
@@ -22,9 +92,6 @@ export default function patternIntelligenceExtension(pi: ExtensionAPI): void {
       "Diagnose forces before prescribing a design pattern. Returns questions, transparent multi-term scores, rejected patterns, a non-pattern direct baseline, evidence plans, and a bounded pattern compound.",
     promptSnippet:
       "Analyze architectural forces, tradeoffs, and design pattern recommendations for a design case",
-    promptGuidelines: [
-      "Use analyze_design_case when facing architectural decisions, refactoring options, or deciding whether an abstraction is justified over a direct solution.",
-    ],
     parameters: Type.Object({
       case: Type.Object({
         problem: Type.String({ description: "Concrete problem and system context statement" }),
@@ -79,9 +146,6 @@ export default function patternIntelligenceExtension(pi: ExtensionAPI): void {
       "Compare two to six named design patterns against one concrete case. Returns contextual winner or no winner, plus tipping points.",
     promptSnippet:
       "Compare candidate design patterns against a case to find the best fit and tipping points",
-    promptGuidelines: [
-      "Use compare_pattern_options when evaluating multiple plausible architectural patterns or competing abstractions.",
-    ],
     parameters: Type.Object({
       case: Type.Object({
         problem: Type.String(),
@@ -112,9 +176,6 @@ export default function patternIntelligenceExtension(pi: ExtensionAPI): void {
       "Audit patterns already used or proposed for cargo-cult risk, missing forces, hidden costs, and simpler alternatives.",
     promptSnippet:
       "Audit codebase or proposed design for pattern misuse, cargo culting, and over-engineering",
-    promptGuidelines: [
-      "Use detect_pattern_misuse to check whether complex patterns (e.g. Singleton, CQRS, Event Sourcing, Sagas) are unnecessary or harmful in the given context.",
-    ],
     parameters: Type.Object({
       case: Type.Object({
         problem: Type.String(),
@@ -143,9 +204,6 @@ export default function patternIntelligenceExtension(pi: ExtensionAPI): void {
       "Apply counterfactual scenarios (scale, delivery, consistency, team, evidence) and report when the leading decision flips.",
     promptSnippet:
       "Stress test an architectural decision under changing scale, team, or failure assumptions",
-    promptGuidelines: [
-      "Use stress_test_pattern_decision before committing to complex architectures to see if the decision holds under scenario changes.",
-    ],
     parameters: Type.Object({
       case: Type.Object({
         problem: Type.String(),
