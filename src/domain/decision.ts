@@ -28,6 +28,16 @@ export interface ScoreBreakdown {
 
 export type RecommendationRole = "primary" | "supporting" | "alternative" | "avoid";
 
+export type RejectionQualification = "contraindicated" | "overkill" | "premature" | "unnecessary";
+
+export interface RejectionMatrixEntry {
+  readonly pattern: string;
+  readonly qualification: RejectionQualification;
+  readonly reason: string;
+  readonly directBaseline: string;
+  readonly tippingPoint: string;
+}
+
 export interface EvidencePlan {
   readonly hypothesis: string;
   readonly measure: readonly string[];
@@ -46,6 +56,51 @@ export interface PatternAssessment {
   readonly liabilities: readonly string[];
   readonly simplerAlternative: string;
   readonly evidencePlan: EvidencePlan;
+  readonly qualification?: RejectionQualification | undefined;
+  readonly tippingPoint?: string | undefined;
+}
+
+export type ComponentLayer =
+  | "Domain Port"
+  | "Infrastructure Adapter"
+  | "Outbox Relay Worker"
+  | "Idempotent Consumer"
+  | "Fallback Router"
+  | "Workflow Coordinator"
+  | "Compensation Handler"
+  | "Resilience Interceptor"
+  | "Migration Interceptor"
+  | "Shadow Comparator"
+  | string;
+
+export interface TopologyComponent {
+  readonly name: string;
+  readonly patternId: string;
+  readonly role: "primary" | "supporting";
+  readonly layer: ComponentLayer;
+  readonly responsibility: string;
+}
+
+export interface TopologyDataFlow {
+  readonly from: string;
+  readonly to: string;
+  readonly description: string;
+}
+
+export interface CompoundTopology {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly components: readonly TopologyComponent[];
+  readonly dataFlows: readonly TopologyDataFlow[];
+}
+
+export interface CompoundPattern {
+  readonly patternId: string;
+  readonly role: "primary" | "supporting";
+  readonly reason: string;
+  readonly layer?: ComponentLayer | undefined;
+  readonly component?: string | undefined;
 }
 
 export interface DecisionAnalysis {
@@ -57,11 +112,8 @@ export interface DecisionAnalysis {
   readonly questions: readonly string[];
   readonly patterns: readonly PatternAssessment[];
   readonly rejectedPatterns: readonly PatternAssessment[];
-  readonly compound: readonly {
-    patternId: string;
-    role: "primary" | "supporting";
-    reason: string;
-  }[];
+  readonly compound: readonly CompoundPattern[];
+  readonly topology?: CompoundTopology | undefined;
 }
 
 export interface PatternComparison {
@@ -76,6 +128,8 @@ export interface MisuseFinding {
   readonly pattern: Pattern;
   readonly risk: "low" | "medium" | "high";
   readonly verdict: "fits" | "questionable" | "cargo-cult-risk";
+  readonly qualification?: RejectionQualification | undefined;
+  readonly tippingPoint?: string | undefined;
   readonly reasons: readonly string[];
   readonly alternatives: readonly string[];
   readonly requiredEvidence: readonly string[];
