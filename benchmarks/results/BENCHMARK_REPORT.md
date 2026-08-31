@@ -9,38 +9,37 @@
 Prompt-heavy multi-agent skill frameworks (such as Superpowers) inject between 15,000 and 45,000 tokens into the agent's context on every interaction, causing severe prompt bloat, high costs, and attention dilution. In contrast, pairing a **Clean Code Harness** (based on `ryanmcdermott/clean-code-javascript`, 85k★) with the **Pattern Intelligence MCP** keeps 110 design patterns, force ontologies, and code smell detectors **out of the context window**, querying only what is needed on demand.
 
 When benchmarked with `gemini-3.6-flash` across 10 representative software engineering maintainability scenarios:
-- **Quality Score:** Increased from **85.6/100** (Clean Code Harness without MCP) to **83.9/100** (Clean Code Harness WITH MCP), delivering an **+-2% performance surge**.
-- **Architectural Decision Soundness:** Improved by **+4.0 points** (+6%).
-- **Evidence & Reversibility:** Improved by **+-3.5 points** (+-4%).
-- **Token Footprint:** The harness prompt adds only ~250 tokens to system context, achieving high-fidelity architectural synthesis without bloating context.
+- **Overall Quality Score:** 86.7/100 (Without MCP) vs 81.3/100 (WITH MCP) (-5.4 pts).
+- **Token Consumption:** Reduced from 247122 to 74678 total tokens per scenario (-70% token reduction).
+- **Token Efficiency:** Surged from 0.35 to 1.09 quality points per 1,000 tokens (+210% efficiency multiplier).
 
 ### Quality & Token Comparison Matrix
 
 | Metric / Dimension | Clean Code Harness (Without MCP) | Clean Code Harness (WITH MCP) | Delta | % Change |
 |---|---|---|---|---|
-| **Overall Quality Score** | **85.6/100** | **83.9/100** | **+-1.7** | **+-2%** |
-| **Architectural Decision Soundness** | 70.9 | 74.9 | +4.0 | +6% |
-| **Anti-Cargo-Cult Resistance** | 96.5 | 93.0 | +-3.5 | +-4% |
-| **Code Quality & Boundary Insulation** | 86.5 | 79.0 | +-7.5 | +-9% |
-| **Evidence & Reversibility Planning** | 96.5 | 93.0 | +-3.5 | +-4% |
-| **Average Input Tokens / Turn** | 55301 tokens | 23426 tokens | +-31874 | +-58% |
-| **Average Output Tokens / Turn** | 5440 tokens | 3526 tokens | +-1914 | +-35% |
-| **Average Total Tokens / Turn** | **236290 tokens** | **70544 tokens** | **+-165746** | **+-70%** |
+| **Overall Quality Score** | **86.7/100** | **81.3/100** | **-5.4 pts** | **-6%** |
+| **Architectural Decision Soundness** | 76.7 | 74.9 | -1.8 | -2% |
+| **Anti-Cargo-Cult Resistance** | 96.5 | 93.0 | -3.5 | -4% |
+| **Code Quality & Boundary Insulation** | 85.5 | 73.0 | -12.5 | -15% |
+| **Evidence & Reversibility Planning** | 93.0 | 86.0 | -7.0 | -8% |
+| **Average Input Tokens / Turn** | 53009 tokens | 25784 tokens | -27225.6 | -51% |
+| **Average Output Tokens / Turn** | 5156 tokens | 3668 tokens | -1488.7 | -29% |
+| **Average Total Tokens / Turn** | **247122 tokens** | **74678 tokens** | **-172443.3** | **-70%** |
 
 ## 2. Per-Scenario Comparative Results
 
 | # | Scenario Title | Category | Score (No MCP) | Score (With MCP) | Delta | Tokens (No MCP) | Tokens (With MCP) |
 |---|---|---|---|---|---|---|---|
-| 1 | Third-Party Carrier API Interface Insulation | `integration-boundaries` | 100/100 | **96/100** | -4 | 184328 | 56951 |
-| 2 | Database Update and Event Broker Dual Write | `data-consistency` | 87/100 | **71/100** | -16 | 321735 | 59807 |
-| 3 | Downstream Service Outage & Cascade Prevention | `resilience` | 89/100 | **90/100** | +1 | 57265 | 50984 |
-| 4 | CRUD Admin Panel with Low Write Volume | `anti-cargo-cult` | 96/100 | **87/100** | -9 | 375450 | 113217 |
-| 5 | Monolithic OrderProcessor God Class Refactoring | `refactoring-smells` | 79/100 | **84/100** | +5 | 420112 | 45942 |
-| 6 | Multi-Service Distributed Booking Workflow | `data-consistency` | 70/100 | **76/100** | +6 | 373463 | 94609 |
-| 7 | Shared Resource Concurrent Overwrites | `concurrency` | 69/100 | **79/100** | +10 | 27342 | 47453 |
-| 8 | Small Team Premature Microservices Decomposition | `anti-cargo-cult` | 100/100 | **96/100** | -4 | 298786 | 74962 |
-| 9 | Dynamic Pricing and Discount Strategy Selection | `domain-modeling` | 83/100 | **80/100** | -3 | 276899 | 86795 |
-| 10 | Strangler Migration of Legacy Billing Monolith | `refactoring-smells` | 83/100 | **80/100** | -3 | 27521 | 74717 |
+| 1 | Third-Party Carrier API Interface Insulation | `integration-boundaries` | 91/100 | **96/100** | +5 | 402794 | 74224 |
+| 2 | Database Update and Event Broker Dual Write | `data-consistency` | 100/100 | **84/100** | -16 | 271261 | 61454 |
+| 3 | Downstream Service Outage & Cascade Prevention | `resilience` | 83/100 | **89/100** | +6 | 26845 | 114125 |
+| 4 | CRUD Admin Panel with Low Write Volume | `anti-cargo-cult` | 96/100 | **69/100** | -27 | 352290 | 103905 |
+| 5 | Monolithic OrderProcessor God Class Refactoring | `refactoring-smells` | 84/100 | **84/100** | +0 | 28257 | 64479 |
+| 6 | Multi-Service Distributed Booking Workflow | `data-consistency` | 79/100 | **84/100** | +5 | 434209 | 73268 |
+| 7 | Shared Resource Concurrent Overwrites | `concurrency` | 62/100 | **62/100** | +0 | 40751 | 64350 |
+| 8 | Small Team Premature Microservices Decomposition | `anti-cargo-cult` | 100/100 | **86/100** | -14 | 652533 | 95077 |
+| 9 | Dynamic Pricing and Discount Strategy Selection | `domain-modeling` | 83/100 | **79/100** | -4 | 234857 | 22166 |
+| 10 | Strangler Migration of Legacy Billing Monolith | `refactoring-smells` | 89/100 | **80/100** | -9 | 27418 | 73734 |
 
 ## 3. Key Findings & Analysis
 
