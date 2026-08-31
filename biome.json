@@ -7,7 +7,9 @@
       "!!coverage",
       "!!node_modules",
       "!!knowledge/curriculum",
-      "!!.archify"
+      "!!.archify",
+      "!!benchmarks/pi-antigravity",
+      "!!benchmarks/auth.json"
     ]
   },
   "formatter": {

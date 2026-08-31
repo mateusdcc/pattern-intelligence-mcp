@@ -1,0 +1,250 @@
+[
+  {
+    "id": "scenario-01-carrier-boundary",
+    "category": "integration-boundaries",
+    "title": "Third-Party Carrier API Interface Insulation",
+    "problem": "Three third-party shipping carrier APIs expose incompatible interfaces and leak vendor payload structures into our core domain checkout and shipping service.",
+    "context": {
+      "evidence": [
+        "Provider-specific types appear across 19 core domain files",
+        "Switching carriers requires rewriting core checkout logic"
+      ]
+    },
+    "prompt": "We integrate with FedEx, UPS, and DHL. Their APIs have completely different structures and their SDK models have spread across 19 domain files. How should we architect this in our TypeScript codebase to insulate our core domain and maintain code quality? Provide concrete recommendations, tradeoffs, and a reversible adoption plan.",
+    "oracle": {
+      "expectedRecommendation": "adopt-patterns",
+      "targetPatterns": ["Adapter", "Anti-Corruption Layer", "Strategy"],
+      "contraindicatedPatterns": ["Singleton", "Microservices", "CQRS"],
+      "keyForces": [
+        "Interface incompatibility",
+        "Domain boundary insulation",
+        "Vendor independence"
+      ]
+    }
+  },
+  {
+    "id": "scenario-02-dual-write-consistency",
+    "category": "data-consistency",
+    "title": "Database Update and Event Broker Dual Write",
+    "problem": "A transactional database update succeeds, but publishing the notification event to Kafka immediately after commit occasionally fails during broker blips, causing lost events and state divergence.",
+    "context": {
+      "delivery": "at-least-once",
+      "evidence": [
+        "43 missing notification events recorded during broker downtime last month",
+        "Dual writes fail intermittently"
+      ]
+    },
+    "prompt": "Our user registration saves to PostgreSQL and then publishes an event to Kafka. When Kafka is temporarily down, the DB commit succeeds but the message is lost. How should we architect this to guarantee at-least-once delivery and eliminate dual-write data loss without distributed 2PC locking?",
+    "oracle": {
+      "expectedRecommendation": "adopt-patterns",
+      "targetPatterns": ["Transactional Outbox", "Idempotent Receiver", "Change Data Capture"],
+      "contraindicatedPatterns": [
+        "Two-Phase Commit (2PC)",
+        "Distributed Lock",
+        "Ignoring Failures"
+      ],
+      "keyForces": ["Dual-write hazard", "At-least-once delivery", "Atomicity without 2PC"]
+    }
+  },
+  {
+    "id": "scenario-03-downstream-resilience",
+    "category": "resilience",
+    "title": "Downstream Service Outage & Cascade Prevention",
+    "problem": "A downstream payment scoring API suffers intermittent 20-second latencies and partial outages. Incoming HTTP requests block worker threads until our entire API gateway exhausts its connection pool.",
+    "context": {
+      "failureModes": ["Remote timeout", "Provider outage", "Connection pool exhaustion"],
+      "evidence": [
+        "P99 latency reaches 19s during downstream degradation",
+        "504 Gateway Timeouts cascade across unrelated endpoints"
+      ]
+    },
+    "prompt": "Our payment scoring vendor intermittently degrades with 20s response times, causing our server connection pool to saturate and crashing our entire API. What architectural resilience patterns should we apply to isolate this dependency and fail fast safely?",
+    "oracle": {
+      "expectedRecommendation": "adopt-patterns",
+      "targetPatterns": ["Circuit Breaker", "Timeout", "Bulkhead", "Retry with Backoff and Jitter"],
+      "contraindicatedPatterns": ["Infinite Retry", "Shared Thread Pool"],
+      "keyForces": ["Fault isolation", "Bounded latency", "Cascading failure prevention"]
+    }
+  },
+  {
+    "id": "scenario-04-premature-cqrs-event-sourcing",
+    "category": "anti-cargo-cult",
+    "title": "CRUD Admin Panel with Low Write Volume",
+    "problem": "An internal employee directory CRUD app has 50 updates per day and 500 reads per day. A developer proposed migrating to full Event Sourcing and CQRS with separate read models and Kafka event projections.",
+    "context": {
+      "scale": { "throughput": "low", "dataVolume": "1000 records" },
+      "team": { "size": "small (2 devs)", "experience": "junior/mid" },
+      "evidence": [
+        "Daily write volume is under 50 operations",
+        "Current PostgreSQL queries execute in < 2ms"
+      ]
+    },
+    "prompt": "For an internal employee directory with 1,000 records, 50 writes/day and 2 developers, a team member proposed rewriting it with Event Sourcing and CQRS on Kafka to 'future-proof' the architecture. Should we adopt this? Evaluate this design case, detect any cargo-cult risks, and recommend the soundest maintainable path.",
+    "oracle": {
+      "expectedRecommendation": "prefer-direct-solution",
+      "targetPatterns": [
+        "Direct Solution / Simple CRUD",
+        "Modular Monolith",
+        "Active Record / Repository"
+      ],
+      "contraindicatedPatterns": ["Event Sourcing", "CQRS", "Kafka Event-Driven Architecture"],
+      "keyForces": [
+        "Low throughput",
+        "High operational cost vs low benefit",
+        "Cargo-cult over-engineering risk"
+      ]
+    }
+  },
+  {
+    "id": "scenario-05-god-class-refactoring",
+    "category": "refactoring-smells",
+    "title": "Monolithic OrderProcessor God Class Refactoring",
+    "problem": "A legacy OrderProcessor class has 2,800 lines of code handling tax calculation, fraud checks, payment capture, inventory reservation, email notifications, and shipping label generation inside nested conditionals.",
+    "context": {
+      "evidence": [
+        "OrderProcessor has Cyclomatic Complexity > 85",
+        "Every new feature causes merge conflicts and regressions in unrelated checkout stages"
+      ]
+    },
+    "prompt": "Our TypeScript OrderProcessor class is 2,800 lines long and handles taxes, fraud, payment, inventory, emails, and shipping in a giant switch/conditional block. We need to refactor it for high cohesion (LCOM4=1), low cyclomatic complexity (<10 per method), and safe incremental testability. How should we structure the refactoring?",
+    "oracle": {
+      "expectedRecommendation": "adopt-patterns",
+      "targetPatterns": [
+        "Pipeline / Interceptor",
+        "Command",
+        "Strategy",
+        "Facade",
+        "Extract Delegate"
+      ],
+      "contraindicatedPatterns": ["Mega-Singleton", "Distributed Microservices Rewrite"],
+      "keyForces": [
+        "Single Responsibility Principle",
+        "High cohesion / low coupling",
+        "Step-by-step seam extraction"
+      ]
+    }
+  },
+  {
+    "id": "scenario-06-distributed-saga-compensation",
+    "category": "data-consistency",
+    "title": "Multi-Service Distributed Booking Workflow",
+    "problem": "A travel booking workflow spans Flight, Hotel, and Car Rental microservices. If Hotel booking fails after Flight is charged, the user is left in an inconsistent state without automatic compensation.",
+    "context": {
+      "consistency": "eventual",
+      "complexityBudget": "substantial",
+      "evidence": [
+        "Partial booking failures affect 0.4% of checkouts and require manual DB interventions"
+      ]
+    },
+    "prompt": "In our distributed booking platform (Flights, Hotels, Cars), hotel reservations sometimes fail after flight tickets are booked. How should we architect this cross-service transaction to ensure eventual consistency, automated compensation, and clear observability?",
+    "oracle": {
+      "expectedRecommendation": "adopt-patterns",
+      "targetPatterns": [
+        "Saga (Orchestrated or Choreographed)",
+        "Compensating Transaction",
+        "Transactional Outbox"
+      ],
+      "contraindicatedPatterns": ["Distributed 2PC Locking across HTTP", "Manual Reconciliation"],
+      "keyForces": ["Distributed transaction", "Compensating action", "Eventual consistency"]
+    }
+  },
+  {
+    "id": "scenario-07-lost-concurrent-updates",
+    "category": "concurrency",
+    "title": "Shared Resource Concurrent Overwrites",
+    "problem": "Two admins simultaneously editing the same product catalog record overwrite each other's changes because the system performs unversioned last-write-wins updates.",
+    "context": {
+      "statefulness": "stateful",
+      "evidence": ["28 lost update incidents reported last month in catalog editing"]
+    },
+    "prompt": "When two support agents update the same customer record at the same time, the last submit overwrites the first without warning. What concurrency pattern should we implement in our PostgreSQL/TypeScript stack to detect and prevent lost updates cleanly?",
+    "oracle": {
+      "expectedRecommendation": "adopt-patterns",
+      "targetPatterns": [
+        "Optimistic Concurrency Control",
+        "Version Check / ETag",
+        "Pessimistic Lock / Mutex"
+      ],
+      "contraindicatedPatterns": ["Last-Write-Wins", "Blind Overwrites"],
+      "keyForces": ["Lost update prevention", "Versioned state", "Conflict detection"]
+    }
+  },
+  {
+    "id": "scenario-08-premature-microservices-split",
+    "category": "anti-cargo-cult",
+    "title": "Small Team Premature Microservices Decomposition",
+    "problem": "A startup with 3 engineers and 200 daily active users wants to split a 5,000-line monolithic codebase into 8 separate microservices with Kubernetes, gRPC, and service mesh.",
+    "context": {
+      "scale": { "throughput": "low", "users": 200 },
+      "team": { "size": "3 engineers", "operationsCapacity": "none" },
+      "evidence": [
+        "Total codebase is only 5,000 lines of TypeScript",
+        "Infrastructure overhead would exceed development time"
+      ]
+    },
+    "prompt": "Our 3-person team has a 5,000-line monolith. One developer wants to split it into 8 microservices deployed on Kubernetes with Istio service mesh to 'scale like Netflix'. Evaluate this proposal, identify misuse/cargo-cult risks, and recommend the best architectural structure.",
+    "oracle": {
+      "expectedRecommendation": "prefer-direct-solution",
+      "targetPatterns": ["Modular Monolith", "Ports and Adapters", "Component-based Monolith"],
+      "contraindicatedPatterns": [
+        "Microservices Mesh",
+        "Distributed Service Fleet",
+        "Kubernetes Multi-Cluster"
+      ],
+      "keyForces": [
+        "Operational complexity budget",
+        "Small team capacity",
+        "Codebase modularity without distributed overhead"
+      ]
+    }
+  },
+  {
+    "id": "scenario-09-runtime-algorithm-variation",
+    "category": "domain-modeling",
+    "title": "Dynamic Pricing and Discount Strategy Selection",
+    "problem": "Checkout needs to apply different discount and pricing algorithms (VIP tier, seasonal coupon, bulk volume, B2B contract) that vary at runtime and change frequently.",
+    "context": {
+      "changeAxes": ["Pricing and discount policy"],
+      "evidence": [
+        "Discount calculation rules changed 14 times this quarter across 8 promotional campaigns"
+      ]
+    },
+    "prompt": "Our checkout pricing logic changes weekly with new promotional rules, coupons, and B2B pricing tiers. Currently it's a series of if-else checks in checkout.ts that breaks existing promotions on every update. What design pattern should we adopt to make discount calculations extensible without modifying checkout flow?",
+    "oracle": {
+      "expectedRecommendation": "adopt-patterns",
+      "targetPatterns": ["Strategy", "Policy", "Composite / Chain of Responsibility"],
+      "contraindicatedPatterns": ["Hardcoded Switch Cases", "Singleton State Machine"],
+      "keyForces": [
+        "Open/Closed Principle",
+        "Runtime algorithm interchangeability",
+        "Isolated discount calculations"
+      ]
+    }
+  },
+  {
+    "id": "scenario-10-legacy-system-safe-migration",
+    "category": "refactoring-smells",
+    "title": "Strangler Migration of Legacy Billing Monolith",
+    "problem": "We must replace a mission-critical legacy billing service without a risky 'big bang' cutover, ensuring zero downtime and continuous verification during incremental migration.",
+    "context": {
+      "riskTolerance": "low",
+      "evidence": ["Billing processes $2M/day; downtime cost is $50k/hour"]
+    },
+    "prompt": "We need to rewrite an old legacy billing module that processes $2M/day. Management strictly forbids a big-bang rewrite. How should we architect the incremental migration so new code handles traffic route-by-route with instant fallback and zero downtime?",
+    "oracle": {
+      "expectedRecommendation": "adopt-patterns",
+      "targetPatterns": [
+        "Strangler Fig",
+        "Branch by Abstraction",
+        "Feature Toggle / Dark Launch",
+        "Anti-Corruption Layer"
+      ],
+      "contraindicatedPatterns": ["Big Bang Rewrite", "Direct DB Sharing"],
+      "keyForces": [
+        "Zero downtime migration",
+        "Incremental traffic steering",
+        "Immediate rollback capability"
+      ]
+    }
+  }
+]

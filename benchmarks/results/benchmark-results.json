@@ -1,0 +1,484 @@
+{
+  "timestamp": "2026-08-31T00:22:55.945Z",
+  "model": "gemini-3.6-flash",
+  "provider": "antigravity",
+  "scenariosCount": 10,
+  "summary": {
+    "baselineOverall": 39.8,
+    "mcpOverall": 80,
+    "overallImprovementPct": 101,
+    "baselineSoundness": 7,
+    "mcpSoundness": 74.9,
+    "baselineCargoCult": 85,
+    "mcpCargoCult": 89.5,
+    "baselineMaintainability": 50,
+    "mcpMaintainability": 81,
+    "baselineEvidence": 30,
+    "mcpEvidence": 75.5
+  },
+  "runs": {
+    "baseline": [
+      {
+        "scenarioId": "scenario-01-carrier-boundary",
+        "scenarioTitle": "Third-Party Carrier API Interface Insulation",
+        "category": "integration-boundaries",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 687,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 0,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 41,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-02-dual-write-consistency",
+        "scenarioTitle": "Database Update and Event Broker Dual Write",
+        "category": "data-consistency",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 606,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 0,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 41,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-03-downstream-resilience",
+        "scenarioTitle": "Downstream Service Outage & Cascade Prevention",
+        "category": "resilience",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 644,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 0,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 41,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-04-premature-cqrs-event-sourcing",
+        "scenarioTitle": "CRUD Admin Panel with Low Write Volume",
+        "category": "anti-cargo-cult",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 855,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 35,
+          "antiCargoCult": 25,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 35,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": false
+        }
+      },
+      {
+        "scenarioId": "scenario-05-god-class-refactoring",
+        "scenarioTitle": "Monolithic OrderProcessor God Class Refactoring",
+        "category": "refactoring-smells",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 636,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 0,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 41,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-06-distributed-saga-compensation",
+        "scenarioTitle": "Multi-Service Distributed Booking Workflow",
+        "category": "data-consistency",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 672,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 0,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 41,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-07-lost-concurrent-updates",
+        "scenarioTitle": "Shared Resource Concurrent Overwrites",
+        "category": "concurrency",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 620,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 0,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 41,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-08-premature-microservices-split",
+        "scenarioTitle": "Small Team Premature Microservices Decomposition",
+        "category": "anti-cargo-cult",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 647,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 35,
+          "antiCargoCult": 25,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 35,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": false
+        }
+      },
+      {
+        "scenarioId": "scenario-09-runtime-algorithm-variation",
+        "scenarioTitle": "Dynamic Pricing and Discount Strategy Selection",
+        "category": "domain-modeling",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 623,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 0,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 41,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-10-legacy-system-safe-migration",
+        "scenarioTitle": "Strangler Migration of Legacy Billing Monolith",
+        "category": "refactoring-smells",
+        "mode": "baseline",
+        "output": "\n[STDERR]\nError: Unknown provider \"antigravity\". Use --list-models to see available providers/models.\n",
+        "durationMs": 614,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 0,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 41,
+          "matchedTargetPatterns": [],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      }
+    ],
+    "mcpEnhanced": [
+      {
+        "scenarioId": "scenario-01-carrier-boundary",
+        "scenarioTitle": "Third-Party Carrier API Interface Insulation",
+        "category": "integration-boundaries",
+        "mode": "mcp-enhanced",
+        "output": "### Architectural Strategy: Ports & Adapters + Anti-Corruption Layer\n\nWhen carrier SDKs leak across 19 domain files, your domain becomes tightly coupled to vendor-specific schemas, API breaking changes, and external SDK types.\n\nTo isolate your core domain while handling structural discrepancies across FedEx, UPS, and DHL, adopt **Hexagonal Architecture (Ports & Adapters)** backed by an **Anti-Corruption Layer (ACL)** per carrier:\n\n```\n[ Domain Core ]  <--- (Depends on) ---  [ Carrier Port Interface ]\n                                                   ▲\n                                                   │ (Implements)\n                           ┌───────────────────────┼───────────────────────┐\n                           │                       │                       │\n                    [ FedEx Adapter ]       [ UPS Adapter ]         [ DHL Adapter ]\n                           │                       │                       │\n                     (ACL Mapper)            (ACL Mapper)            (ACL Mapper)\n                           │                       │                       │\n                    [ FedEx SDK ]           [ UPS SDK ]             [ DHL SDK ]\n```\n\n1. **Domain Ports (`/domain/ports`)**: Define clean TypeScript interfaces using your application's domain language (e.g., `Shipment`, `RateQuote`, `TrackingInfo`).\n2. **Anti-Corruption Layer Mappers (`/infrastructure/carriers/*`)**: Pure mapping functions that translate domain entities into vendor API payloads, and translate vendor responses into domain entities or Result unions.\n3. **Carrier Adapters**: Classes implementing the domain port interface by calling carrier SDKs behind the boundary.\n4. **Lint-Enforced Boundaries**: ESLint rules that prohibit importing vendor SDKs inside any `/domain` directory.\n\n---\n\n### Concrete TypeScript Implementation\n\n#### 1. Unified Domain Port & Core Entities (`/domain/ports/shipping-carrier.port.ts`)\n\n```typescript\n// /domain/model/shipping.ts\nexport interface Money {\n  amount: number;\n  currency: string; // ISO 4217\n}\n\nexport interface Address {\n  streetLines: string[];\n  city: string;\n  stateOrProvince: string;\n  postalCode: string;\n  countryCode: string; // ISO 3166-1 alpha-2\n}\n\nexport interface PackageDimensions {\n  length: number;\n  width: number;\n  height: number;\n  unit: 'IN' | 'CM';\n  weight: number;\n  weightUnit: 'LB' | 'KG';\n}\n\nexport interface RateRequest {\n  origin: Address;\n  destination: Address;\n  packages: PackageDimensions[];\n}\n\nexport interface RateQuote {\n  carrierId: 'FEDEX' | 'UPS' | 'DHL';\n  serviceName: string;\n  serviceCode: string;\n  totalCharge: Money;\n  estimatedDeliveryDate?: Date;\n}\n\nexport type CarrierResult<T> = \n  | { success: true; data: T }\n  | { success: false; error: { code: string; message: string; rawError?: unknown } };\n\n// /domain/ports/shipping-carrier.port.ts\nexport interface ShippingCarrierPort {\n  readonly carrierId: 'FEDEX' | 'UPS' | 'DHL';\n  getRates(request: RateRequest): Promise<CarrierResult<RateQuote[]>>;\n}\n```\n\n---\n\n#### 2. Isolated Carrier Adapter & ACL Mapper (`/infrastructure/carriers/fedex/`)\n\n```typescript\n// /infrastructure/carriers/fedex/fedex.mapper.ts\n// SDK imports stay confined strictly within this directory\nimport type { FedExRateRequestPayload, FedExRateResponsePayload } from 'fedex-sdk-types';\nimport type { RateRequest, RateQuote } from '../../../domain/model/shipping';\n\nexport function toFedExRatePayload(domainReq: RateRequest): FedExRateRequestPayload {\n  return {\n    accountNumber: { value: process.env.FEDEX_ACCOUNT_NUMBER ?? '' },\n    requestedShipment: {\n      shipper: {\n        address: {\n          streetLines: domainReq.origin.streetLines,\n          city: domainReq.origin.city,\n          stateOrProvinceCode: domainReq.origin.stateOrProvince,\n          postalCode: domainReq.origin.postalCode,\n          countryCode: domainReq.origin.countryCode,\n        },\n      },\n      recipient: {\n        address: {\n          streetLines: domainReq.destination.streetLines,\n          city: domainReq.destination.city,\n          stateOrProvinceCode: domainReq.destination.stateOrProvince,\n          postalCode: domainReq.destination.postalCode,\n          countryCode: domainReq.destination.countryCode,\n        },\n      },\n      requestedPackageLineItems: domainReq.packages.map((p) => ({\n        weight: { value: p.weight, units: p.weightUnit === 'LB' ? 'LB' : 'KG' },\n        dimensions: { length: p.length, width: p.width, height: p.height, units: p.unit },\n      })),\n    },\n  };\n}\n\nexport function toDomainRateQuotes(rawResponse: FedExRateResponsePayload): RateQuote[] {\n  const rateDetails = rawResponse.output?.rateReplyDetails ?? [];\n  return rateDetails.map((detail) => {\n    const totalNetCharge = detail.ratedShipmentDetails?.[0]?.totalNetCharge ?? 0;\n    const currency = detail.ratedShipmentDetails?.[0]?.currency ?? 'USD';\n\n    return {\n      carrierId: 'FEDEX',\n      serviceName: detail.serviceName ?? 'FedEx Standard',\n      serviceCode: detail.serviceType ?? 'FEDEX_EXPRESS',\n      totalCharge: { amount: totalNetCharge, currency },\n      estimatedDeliveryDate: detail.operationalDetail?.deliveryDate \n        ? new Date(detail.operationalDetail.deliveryDate) \n        : undefined,\n    };\n  });\n}\n```\n\n```typescript\n// /infrastructure/carriers/fedex/fedex.adapter.ts\nimport type { ShippingCarrierPort } from '../../../domain/ports/shipping-carrier.port';\nimport type { RateRequest, RateQuote, CarrierResult } from '../../../domain/model/shipping';\nimport { toFedExRatePayload, toDomainRateQuotes } from './fedex.mapper';\n\nexport class FedExAdapter implements ShippingCarrierPort {\n  readonly carrierId = 'FEDEX';\n\n  constructor(private readonly fedexClient: { getRates: (payload: unknown) => Promise<unknown> }) {}\n\n  async getRates(request: RateRequest): Promise<CarrierResult<RateQuote[]>> {\n    try {\n      const payload = toFedExRatePayload(request);\n      const rawResult = await this.fedexClient.getRates(payload);\n      const quotes = toDomainRateQuotes(rawResult as any);\n      return { success: true, data: quotes };\n    } catch (err: any) {\n      return {\n        success: false,\n        error: {\n          code: 'FEDEX_RATE_ERROR',\n          message: err?.message ?? 'Failed to fetch FedEx rates',\n          rawError: err,\n        },\n      };\n    }\n  }\n}\n```\n\n---\n\n#### 3. Carrier Registry (`/infrastructure/carriers/carrier.registry.ts`)\n\n```typescript\nimport type { ShippingCarrierPort } from '../../domain/ports/shipping-carrier.port';\n\nexport class CarrierRegistry {\n  private readonly adapters = new Map<'FEDEX' | 'UPS' | 'DHL', ShippingCarrierPort>();\n\n  register(adapter: ShippingCarrierPort): void {\n    this.adapters.set(adapter.carrierId, adapter);\n  }\n\n  get(carrierId: 'FEDEX' | 'UPS' | 'DHL'): ShippingCarrierPort {\n    const adapter = this.adapters.get(carrierId);\n    if (!adapter) {\n      throw new Error(`Carrier adapter for '${carrierId}' is not registered.`);\n    }\n    return adapter;\n  }\n}\n```\n\n---\n\n### Tradeoff Analysis\n\n| Metric / Consideration | Direct Coupling (Current Baseline) | Ports & Adapters + ACL (Proposed) |\n| :--- | :--- | :--- |\n| **Domain Isolation** | ❌ Vulnerable to SDK schema breaking changes across 19 files. | ✅ Complete insulation. SDK types never enter domain scope. |\n| **Adding New Carrier** | ❌ Modifies existing domain logic and spreads logic deeper. | ✅ Add a new adapter file + register in factory without changing domain code. |\n| **Testability** | ❌ Requires mocking carrier SDK globals in domain tests. | ✅ Unit-test mappers with pure functions; mock `ShippingCarrierPort` in domain tests. |\n| **Boilerplate / Code Volume** | ✅ Zero translation layers; lower initial code line count. | ⚠️ Additional mapping functions and explicit boundary types required. |\n| **Feature Leakage Risk** | ❌ Vendor-specific nuances leak directly into core logic. | ⚠️ Need careful port design for unique features (e.g. customs documents) via optional port capabilities. |\n\n---\n\n### Reversible Step-by-Step Adoption Plan\n\n#### Phase 1: Boundary & Domain Seam Setup\n1. Configure ESLint rule `no-restricted-imports` under `src/domain/**` to disallow imports matching `fedex-sdk`, `ups-sdk`, `dhl-sdk`.\n2. Introduce `/domain/ports/shipping-carrier.port.ts` and core domain types (`RateRequest`, `RateQuote`).\n\n#### Phase 2: Pilot Refactor (FedEx)\n1. Build `/infrastructure/carriers/fedex` containing `FedExAdapter` and pure mappers.\n2. Refactor 2 of the 19 affected domain files to accept `ShippingCarrierPort` instead of raw FedEx SDK clients.\n3. Add contract tests matching `FedExAdapter` against real/mocked carrier responses.\n\n#### Phase 3: Rollout Across UPS & DHL\n1. Build `UPSAdapter` and `DHLAdapter` under their respective `/infrastructure/carriers/` subdirectories.\n2. Replace remaining vendor references across all 19 domain files with `ShippingCarrierPort` calls via `CarrierRegistry`.\n\n#### Phase 4: Verification & Exit Criteria\n- **Success Criteria**:\n  - `0` vendor SDK imports in `src/domain/`.\n  - 100% domain unit test suites run using in-memory mock ports (zero HTTP mocks needed in domain tests).\n- **Rollback Trigger / Plan**:\n  - If a carrier-specific feature cannot fit into the port model during Phase 2, roll back the pilot by reverting the 2 migrated domain files without modifying the remaining 17. Because ports wrap external boundaries, rollback costs zero core schema migrations.\n",
+        "durationMs": 41588,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 100,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 100,
+          "evidenceReversibility": 100,
+          "overall": 100,
+          "matchedTargetPatterns": ["Adapter", "Anti-Corruption Layer", "Strategy"],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [
+            "Interface incompatibility",
+            "Domain boundary insulation",
+            "Vendor independence"
+          ],
+          "detectedRollback": true,
+          "detectedMeasurements": true,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-02-dual-write-consistency",
+        "scenarioTitle": "Database Update and Event Broker Dual Write",
+        "category": "data-consistency",
+        "mode": "mcp-enhanced",
+        "output": "To eliminate dual-write data loss and guarantee at-least-once delivery without using distributed Two-Phase Commit (2PC) locking, use the **Transactional Outbox Pattern** on the publisher side paired with an **Idempotent Receiver** on the consumer side.\n\n---\n\n### 1. Root Cause: The Dual-Write Problem\n\nWhen user registration performs two separate network I/O operations (writing to PostgreSQL and publishing to Kafka):\n\n```\nClient ---> [App Server] ---> (1) BEGIN DB Tx -> INSERT users -> COMMIT\n                               (2) Kafka Producer -> Publish Event (FAILS if Kafka is down)\n```\n\n- **Partial Failure:** If Kafka is down or a network timeout occurs after step 1, the database transaction has already committed. The user is registered, but the event is permanently lost.\n- **Why 2PC/XA is avoided:** 2PC requires synchronous locking across PostgreSQL and Kafka nodes. This introduces tight availability coupling, high latency, performance degradation, and complex coordinator failure modes.\n\n---\n\n### 2. Solution Architecture: Transactional Outbox Pattern\n\nInstead of attempting dual writes across system boundaries, convert the external network call into a **local database write** within the same ACID transaction.\n\n```\n[App Server] ---> (1) BEGIN Tx\n                     ├── INSERT INTO users\n                     └── INSERT INTO outbox (event_id, payload, status)\n                  (2) COMMIT Tx (Atomic local boundary)\n\n[Outbox Relay / CDC Worker] ---> Reads Outbox ---> Publishes to Kafka ---> Marks Published\n```\n\n#### Step-by-Step Flow:\n1. **Atomic Write:** The application writes the user record to the `users` table **and** an event payload to an `outbox` table inside a single PostgreSQL database transaction (`BEGIN ... COMMIT`).\n2. **Relay Process:** An asynchronous worker process reads unhandled events from the `outbox` table and publishes them to Kafka.\n3. **Acknowledgment:** Once Kafka acknowledges receipt (`acks=all`), the relay worker marks the outbox record as `PROCESSED` or deletes it.\n\n---\n\n### 3. Outbox Relay Implementations\n\nThere are two primary strategies for processing the outbox table:\n\n#### Option A: Polling Publisher (Low Operational Complexity)\nA background process periodically queries the outbox table using non-blocking row locking (`FOR UPDATE SKIP LOCKED`) to allow parallel workers without contention.\n\n* **Pros:** Easy to implement, requires no extra infrastructure.\n* **Cons:** Introduces polling latency (e.g., 100ms–1s polling intervals) and adds query load to PostgreSQL.\n\n#### Option B: Change Data Capture (CDC / Transaction Log Tailer)\nTools like **Debezium** or **PostgreSQL Logical Decoding** (`pgoutput`) tail PostgreSQL's Write-Ahead Log (WAL) directly.\n\n* **Pros:** Sub-millisecond publish latency, zero polling query overhead on primary DB tables.\n* **Cons:** Requires Debezium / Kafka Connect infrastructure.\n\n---\n\n### 4. Code & Schema Blueprint\n\n#### PostgreSQL Schema\n```sql\nCREATE TABLE users (\n    id UUID PRIMARY KEY,\n    email VARCHAR(255) NOT NULL UNIQUE,\n    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()\n);\n\nCREATE TABLE outbox (\n    id UUID PRIMARY KEY,\n    aggregate_type VARCHAR(64) NOT NULL,\n    aggregate_id VARCHAR(64) NOT NULL,\n    event_type VARCHAR(64) NOT NULL,\n    payload JSONB NOT NULL,\n    status VARCHAR(16) NOT NULL DEFAULT 'PENDING',\n    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n    processed_at TIMESTAMPTZ\n);\n\nCREATE INDEX idx_outbox_pending ON outbox(created_at) WHERE status = 'PENDING';\n```\n\n#### Transactional Registration (TypeScript / SQL)\n```typescript\nimport { Client } from 'pg';\n\nasync function registerUser(client: Client, userData: { id: string; email: string }) {\n  const eventId = crypto.randomUUID();\n  \n  await client.query('BEGIN');\n  try {\n    // 1. Insert domain user\n    await client.query(\n      'INSERT INTO users (id, email) VALUES ($1, $2)',\n      [userData.id, userData.email]\n    );\n\n    // 2. Insert outbox record in the SAME transaction\n    await client.query(\n      `INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload)\n       VALUES ($1, $2, $3, $4, $5)`,\n      [\n        eventId,\n        'USER',\n        userData.id,\n        'USER_REGISTERED',\n        JSON.stringify({ userId: userData.id, email: userData.email, timestamp: new Date() })\n      ]\n    );\n\n    await client.query('COMMIT');\n  } catch (error) {\n    await client.query('ROLLBACK');\n    throw error;\n  }\n}\n```\n\n#### Polling Relay Worker (`SKIP LOCKED`)\n```sql\n-- Worker fetches and locks pending items without blocking other relay workers\nWITH selected AS (\n    SELECT id \n    FROM outbox\n    WHERE status = 'PENDING'\n    ORDER BY created_at ASC\n    LIMIT 100\n    FOR UPDATE SKIP LOCKED\n)\nUPDATE outbox\nSET status = 'PROCESSING'\nFROM selected\nWHERE outbox.id = selected.id\nRETURNING outbox.id, outbox.aggregate_id, outbox.event_type, outbox.payload;\n```\n\n---\n\n### 5. Downstream Requirement: Idempotent Consumer\n\nBecause network retries or relay crashes before updating outbox status can re-send events, the Outbox pattern guarantees **at-least-once** delivery. Consumers must handle duplicate messages safely.\n\n* **Deduplication Table:** Consumers track received `event_id` values in an `processed_events` table inside their local database transaction before applying business logic.\n* **Idempotent Updates:** Where possible, design consumer operations to be naturally idempotent (e.g., `UPSERT` or state machines with explicit status checks).\n",
+        "durationMs": 22384,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 100,
+          "antiCargoCult": 65,
+          "maintainabilityQuality": 85,
+          "evidenceReversibility": 100,
+          "overall": 88,
+          "matchedTargetPatterns": [
+            "Transactional Outbox",
+            "Idempotent Receiver",
+            "Change Data Capture"
+          ],
+          "flaggedContraindicatedPatterns": ["Two-Phase Commit (2PC)"],
+          "matchedForces": ["Dual-write hazard", "At-least-once delivery", "Atomicity without 2PC"],
+          "detectedRollback": true,
+          "detectedMeasurements": true,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-03-downstream-resilience",
+        "scenarioTitle": "Downstream Service Outage & Cascade Prevention",
+        "category": "resilience",
+        "mode": "mcp-enhanced",
+        "output": "To isolate the payment scoring vendor dependency, prevent server connection pool exhaustion, and ensure high API availability, apply a multi-layered resilience architecture combining **Timeout**, **Bulkhead Isolation**, **Circuit Breaker**, and **Graceful Fallback**.\n\n---\n\n### 1. Hard Timeouts (Fast Cancellation)\n* **Problem Solved:** Threads/connections remain tied up for 20 seconds waiting on vendor responses.\n* **Mechanism:** Enforce a strict request timeout (e.g., 500ms–1500ms) matching your SLA using cancellation primitives (such as `AbortController` in JS/Node.js, context deadlines in Go, or HTTP client timeouts in Java).\n* **Impact:** Instantly caps maximum resource retention time per request, preventing resource starvation under degraded conditions.\n\n---\n\n### 2. Bulkhead Isolation (Resource Containment)\n* **Problem Solved:** Exhausting server HTTP request threads or DB connection pools impacts unrelated API endpoints.\n* **Mechanism:** Isolate the vendor client into a dedicated concurrency domain:\n  * **Thread/Semaphore Bulkhead:** Limit maximum parallel outbound connections to the scoring vendor (e.g., max 20 concurrent requests).\n  * **Queue Bound:** Reject requests immediately (`429 Too Many Requests` or internal fallback) when the dedicated queue is full rather than letting requests back up into the global connection pool.\n* **Impact:** Even if the payment vendor degrades to 100% latency, only the isolated payment pool saturates while the rest of the API remains fully operational.\n\n---\n\n### 3. Circuit Breaker (Fail-Fast Mechanism)\n* **Problem Solved:** Continually attempting requests to a known-degraded vendor wastes resources and amplifies latency.\n* **Mechanism:** Wrap vendor calls in a state-machine breaker (e.g., Resilience4j, Cockatiel, Istio/Envoy):\n  * **Closed (Normal):** Requests flow to the vendor. Monitors failure/timeout rate over a sliding window.\n  * **Open (Tripped):** When error/timeout threshold is exceeded (e.g., >50% failures over 10 seconds), open the circuit immediately. Requests fail instantly without making outbound HTTP calls.\n  * **Half-Open (Testing):** After a reset timeout (e.g., 30s), allow a limited probe batch through to verify vendor recovery before resuming normal traffic.\n* **Impact:** Eliminates outbound network traffic to a failing vendor, enabling instantaneous fallback responses.\n\n---\n\n### 4. Graceful Fallback Strategy\n* **Problem Solved:** Avoid returning `500 Internal Server Error` to clients when vendor calls time out or trip the circuit.\n* **Mechanism:** Implement domain-specific degradation rules:\n  * **Cached / Default Risk Score:** Fall back to historical user risk profiles or a neutral default score.\n  * **Rule Engine Fallback:** Run a lightweight internal static heuristics engine.\n  * **Async Evaluation (Decoupled Flow):** Accept the transaction conditionally and enqueue background scoring for delayed verification.\n\n---\n\n### Recommended Layered Architecture\n\n```\n[ Incoming API Request ]\n           │\n           ▼\n┌──────────────────────────────────────┐\n│       1. Bulkhead Isolation          │  (Limit max concurrent vendor requests)\n│       (Max Concurrency Limit)        │\n└──────────────────┬───────────────────┘\n                   │\n                   ▼\n┌──────────────────────────────────────┐\n│       2. Circuit Breaker             │  (If OPEN: short-circuit directly to Fallback)\n│       (Sliding Window Monitor)       │\n└──────────────────┬───────────────────┘\n                   │\n                   ▼\n┌──────────────────────────────────────┐\n│       3. Hard Timeout                │  (Abort after 1000ms deadline)\n│       (e.g., 1000ms max deadline)    │\n└──────────────────┬───────────────────┘\n                   │\n                   ▼\n┌──────────────────────────────────────┐\n│    Vendor HTTP Payment Scoring API   │\n└──────────────────────────────────────┘\n                   │\n             (Timeout / Error)\n                   │\n                   ▼\n┌──────────────────────────────────────┐\n│       4. Fallback Handler            │  (Return default score / heuristic rule)\n└──────────────────────────────────────┘\n```\n\n---\n\n### Summary of Implementation Priorities\n\n1. **Immediate Fix:** Add hard HTTP client timeouts (e.g., 1s) to instantly free thread pool connections.\n2. **Short-Term Fix:** Wrap vendor client calls with a Circuit Breaker and Bulkhead semaphore to contain resource consumption.\n3. **Product Integration:** Define explicit business fallback paths (cached score, rule-based fallback, or async scoring queue) when scoring is unavailable.\n",
+        "durationMs": 23997,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 81,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 65,
+          "evidenceReversibility": 100,
+          "overall": 86,
+          "matchedTargetPatterns": ["Circuit Breaker", "Timeout", "Bulkhead"],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": ["Fault isolation", "Bounded latency"],
+          "detectedRollback": true,
+          "detectedMeasurements": true,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-04-premature-cqrs-event-sourcing",
+        "scenarioTitle": "CRUD Admin Panel with Low Write Volume",
+        "category": "anti-cargo-cult",
+        "mode": "mcp-enhanced",
+        "output": "**No, you should not adopt Event Sourcing and CQRS on Kafka for this system.** \n\nProposing an Event Sourced, CQRS, and Kafka-backed architecture for a 1,000-record internal employee directory maintained by 2 developers is a classic textbook example of **cargo-cult engineering** and **premature abstraction**.\n\n---\n\n### 1. Cargo-Cult Risk & Misuse Analysis\n\n| Dimension | Real System Demands | Proposed Architecture Overhead |\n| :--- | :--- | :--- |\n| **Data Volume** | 1,000 total records (~few megabytes) | Multi-node log retention, topic partitioning, offsets |\n| **Write Velocity** | ~50 writes/day (~1 write every 20 minutes) | Distributed event streaming, log append performance |\n| **Team Size** | 2 developers | Requires dedicated Kafka ops, schema upcasters, projection maintainers |\n| **Consistency** | Strong, immediate CRUD consistency expected | Eventual consistency, projection lag, reconciliation burden |\n\n#### Key Risks & Anti-Patterns Identified:\n* **\"Future-Proofing\" Fallacy:** Designing for hypothetical scale that an internal 1,000-person directory will never reach introduces concrete complexity costs today for non-existent future benefits.\n* **Operational Bankruptcy:** A 2-person team will spend more time managing Kafka brokers, consumer offset lag, deserialization errors, and re-indexing projections than building features.\n* **Data Privacy & Deletion Friction:** Event logs are immutable by design. Compliance requirements (e.g., GDPR \"Right to be Forgotten\", removing personal identifier records upon employee exit) become exceedingly complex in event-sourced streams compared to a simple SQL `DELETE`.\n* **Projection Divergence:** CQRS separates command and query stores. When background consumers lag or fail, the read directory displays stale or out-of-sync data, leading to confusing user experiences for basic updates.\n\n---\n\n### 2. Forces & Trade-Off Matrix\n\n```\n                      ┌─────────────────────────────────────────┐\n                      │    Relational CRUD (Recommended)        │\n                      │  • Low Operational Overhead             │\n                      │  • ACID Transactions & Strong Consistency│\n                      │  • Zero Projection Lag                  │\n                      └────────────────────┬────────────────────┘\n                                           │\n                        Is there complex temporal audit needs\n                        or high-volume read/write asymmetry?\n                                           │\n                         ┌─────────────────┴─────────────────┐\n                         ▼                                   ▼\n                      [ NO ]                               [ YES ]\n                         │                                   │\n       ┌─────────────────┴─────────────────┐      ┌──────────┴──────────┐\n       │ Simple SQL + Audit Log Table      │      │ Event Sourcing +    │\n       │ (Sufficient for 99.9% CRUD apps)  │      │ CQRS on Kafka       │\n       └───────────────────────────────────┘      └─────────────────────┘\n```\n\n---\n\n### 3. Recommended Maintainable Path\n\n#### Step 1: Core Storage — Standard Relational Database\nUse a standard relational database (e.g., **PostgreSQL** or **SQLite**). \n* 1,000 records fits entirely into database memory buffers.\n* Standard SQL indexing gives sub-millisecond query latencies.\n* Simple ACID transactions prevent partial or inconsistent employee profile updates.\n\n#### Step 2: Audit Trail (If History is Required)\nIf the team wants historical change tracking (often confused with the need for full Event Sourcing):\n* Add an `audit_logs` table (recording `user_id`, `action`, `changes_json`, `timestamp`) inside the same SQL transaction.\n* Alternatively, use database triggers or standard ORM lifecycle hooks.\n\n#### Step 3: Search & Filtering\n* PostgreSQL's built-in Full-Text Search (`tsvector`/`tsquery`) or simple `LIKE`/`ILIKE` queries are more than sufficient for search across 1,000 records.\n\n---\n\n### Summary Checklist\n\n| Objective | Avoid | Recommended Solution |\n| :--- | :--- | :--- |\n| **Future-Proofing** | Distributed Event Streams (Kafka) | Modular Monolith / Clean Domain Boundaries |\n| **Audit Trails** | Event Sourcing & Upcasting | Relational `audit_logs` table |\n| **Read Performance** | CQRS Materialized Views | Relational DB Indexes / In-memory caching |\n",
+        "durationMs": 26684,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 100,
+          "antiCargoCult": 30,
+          "maintainabilityQuality": 50,
+          "evidenceReversibility": 30,
+          "overall": 59,
+          "matchedTargetPatterns": ["Modular Monolith"],
+          "flaggedContraindicatedPatterns": ["Event Sourcing", "CQRS"],
+          "matchedForces": [
+            "High operational cost vs low benefit",
+            "Cargo-cult over-engineering risk"
+          ],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-05-god-class-refactoring",
+        "scenarioTitle": "Monolithic OrderProcessor God Class Refactoring",
+        "category": "refactoring-smells",
+        "mode": "mcp-enhanced",
+        "output": "### High-Level Summary of Reasoning\nTo achieve LCOM4=1 and reduce cyclomatic complexity below 10 per method, the monolithic `OrderProcessor` must be decomposed from a single stateful class into distinct single-responsibility domain services combined with an orchestrating pipeline. By isolating each subsystem (tax, fraud, payment, inventory, email, shipping) behind defined interface abstractions and using dependency injection, each component remains independently unit-testable and focused on a single cohesion boundary. Incremental refactoring is safely managed via the Strangler Fig pattern using end-to-end regression test suites.\n\n---\n\n### Architectural Structure for Refactoring\n\n#### 1. Domain Service Decomposition (Cohesion: LCOM4 = 1)\nExtract each branch of the switch/conditional statement into dedicated, stateless domain services:\n\n- **`TaxCalculator`**: Calculates order taxes based on jurisdiction rules.\n- **`FraudDetector`**: Evaluates risk scores and fraud flags.\n- **`PaymentGatewayAdapter`**: Manages authorization and capture transactions.\n- **`InventoryService`**: Handles stock verification and reservations.\n- **`NotificationService`**: Formats and triggers transactional emails.\n- **`FulfillmentService`**: Interfaces with shipping provider APIs.\n\nEach service exposes a minimal interface with targeted inputs and outputs, ensuring `LCOM4 = 1` because all methods operate strictly on their injected dependencies and immediate parameters.\n\n---\n\n#### 2. Pipeline / Middleware Orchestration (Cyclomatic Complexity < 10)\nReplace the monolithic conditional logic with an extensible Pipeline pattern or linear step executor.\n\n```typescript\nexport interface OrderContext {\n  readonly order: Order;\n  paymentResult?: PaymentResult;\n  fraudResult?: FraudResult;\n  taxAmount?: number;\n  shipmentId?: string;\n}\n\nexport interface OrderProcessingStep {\n  readonly name: string;\n  execute(context: OrderContext): Promise<void>;\n}\n\nexport class OrderPipeline {\n  constructor(private readonly steps: OrderProcessingStep[]) {}\n\n  async process(order: Order): Promise<OrderContext> {\n    const context: OrderContext = { order };\n    for (const step of this.steps) {\n      await step.execute(context);\n    }\n    return context;\n  }\n}\n```\n\nEach step class (e.g., `ValidateFraudStep`, `AuthorizePaymentStep`, `ReserveInventoryStep`) encapsulates branching logic for a single phase. Guard clauses and early returns keep the cyclomatic complexity of any given method under 10.\n\n---\n\n#### 3. Incremental Safety & Testability Strategy\n\n1. **Characterization Testing Baseline**:\n   Write integration/characterization tests against the legacy `OrderProcessor` covering known success paths, failure scenarios, and edge cases.\n2. **Strangler Fig Pattern**:\n   Introduce a unified interface `IOrderProcessor`. Wrap the legacy `OrderProcessor` and the new `OrderPipeline` behind a feature flag or facade.\n3. **Step-by-Step Migration**:\n   Extract one responsibility at a time (e.g., start with `NotificationService` or `TaxCalculator`). Delegate that phase of the legacy processor to the new isolated service, running unit tests on the new service while validating against the baseline integration suite.\n4. **Decommissioning**:\n   Once all steps are migrated into discrete `OrderProcessingStep` implementations within `OrderPipeline`, remove the legacy 2,800-line class.\n",
+        "durationMs": 42030,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 55,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 100,
+          "evidenceReversibility": 65,
+          "overall": 77,
+          "matchedTargetPatterns": ["Strategy", "Facade"],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": ["Single Responsibility Principle", "High cohesion / low coupling"],
+          "detectedRollback": true,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-06-distributed-saga-compensation",
+        "scenarioTitle": "Multi-Service Distributed Booking Workflow",
+        "category": "data-consistency",
+        "mode": "mcp-enhanced",
+        "output": "To handle partial failures in cross-service bookings (such as a hotel reservation failing after a flight is confirmed), the system must transition from two-phase commit (2PC) assumptions to an **Eventual Consistency** model using an **Orchestrated Saga Pattern** paired with **Idempotent Receivers** and **Transactional Outbox**.\n\n---\n\n### 1. Primary Architecture: Orchestrated Saga Pattern\n\nIn multi-service booking workflows spanning Flights, Hotels, and Cars, a global ACID transaction is impractical due to autonomous supplier APIs and latency demands. \n\n#### Orchestration vs. Choreography\n* **Why Orchestration wins here:** In event choreography, implicit event chains make tracking partial booking states and handling multi-step compensations hard to audit. An **Orchestration Service (Saga Execution Coordinator)** centrally maintains explicit state transitions, deadline handling, and compensation ordering.\n\n```\n                  ┌───────────────────────────────┐\n                  │    Booking Orchestrator       │\n                  │   (Saga Execution State)      │\n                  └──────────────┬────────────────┘\n                                 │\n         ┌───────────────────────┼───────────────────────┐\n         │ (1) Reserve           │ (2) Reserve (Fails!)   │ (3) Cancel Flight\n         ▼                       ▼                       ▼\n┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐\n│ Flight Service  │     │  Hotel Service  │     │ Flight Service  │\n│ (Compensable)   │     │   (Pivot Step)  │     │ (Compensation)  │\n└─────────────────┘     └─────────────────┘     └─────────────────┘\n```\n\n---\n\n### 2. Transaction Design & Step Classification\n\nDivide the Saga steps into three transaction types:\n\n1. **Compensable Transactions:** Steps that can be reversed by a compensating operation (e.g., `Reserve Flight` $\\rightarrow$ `Cancel Flight Ticket`).\n2. **Pivot Step:** The point of no return. Once the Pivot Step succeeds, the Saga runs to completion (e.g., `Charge Credit Card` or `Finalize Itinerary`).\n3. **Repeatable / Retriable Transactions:** Steps that occur after the pivot step and are guaranteed to succeed eventually via retries (e.g., `Send Confirmation Email`).\n\n#### Saga Execution Sequence (Failure Case)\n1. **Execute Step 1 (Flight):** Orchestrator calls Flight Service $\\rightarrow$ `Flight Reserved` (Status: `PENDING_HOTEL`).\n2. **Execute Step 2 (Hotel):** Orchestrator calls Hotel Service $\\rightarrow$ *Fails (Out of room inventory / API Timeout)*.\n3. **Trigger Compensation:** Orchestrator initiates rollback sequence in reverse order:\n   * Call Flight Service `Cancel Flight` endpoint with `bookingId` and `idempotencyKey`.\n   * Update Booking aggregate state to `FAILED_CANCELLED`.\n\n---\n\n### 3. Guaranteeing Reliability & Consistency\n\n#### A. Idempotent Receivers & APIs\nBecause network retries and at-least-once delivery are inevitable, every participant service (Flight, Hotel, Car) must implement an **Idempotent Receiver**:\n* Pass a deterministic `sagaId` or `idempotencyKey` on every outbound request.\n* Downstream services record processed `idempotencyKey` entries in a dedicated table within the same database transaction as the state change to prevent double-booking or duplicate cancellations.\n\n#### B. Transactional Outbox Pattern\nTo prevent divergence between internal DB updates and messaging brokers (Kafka/RabbitMQ):\n1. Downstream services update local business tables and insert an event record into an `outbox` table in a single local DB transaction.\n2. A separate relay process (CDC / Debezium or poller) reads the `outbox` table and publishes messages to the broker.\n\n#### C. Handling Compensation Failures (Poison Pill Mitigation)\nIf a compensating step fails (e.g., Flight API returns 500 during cancellation):\n* **Exponential Backoff + Jitter:** Retry up to a configured threshold.\n* **Dead Letter Queue (DLQ) & Human Intervention:** If compensation exceeds retries, mark the saga as `REQUIRES_MANUAL_INTERVENTION` and push to an operations queue with full diagnostic payload.\n\n---\n\n### 4. Observability & Auditability\n\n#### A. Distributed Tracing & Correlation IDs\n* Inject `traceparent` (W3C format) and a global `bookingCorrelationId` into all headers/messages.\n* Ensure log aggregator queries can filter by `bookingCorrelationId` across Flight, Hotel, and Payment logs.\n\n#### B. Saga Execution State Engine Metrics\nTrack key operational metrics via Prometheus / OpenTelemetry:\n* `saga_execution_duration_seconds` (Histogram by state)\n* `saga_compensation_total` (Counter grouped by failure cause, e.g., `hotel_api_timeout`)\n* `saga_stuck_instances_total` (Gauge of sagas in pending/compensating state $> T$ minutes)\n\n#### C. Audit Trail\nStore the full state log as an append-only event stream (e.g., `SagaStarted`, `FlightReserved`, `HotelReservationFailed`, `FlightCancellationRequested`, `FlightCancelled`, `SagaAborted`). This allows exact auditability for customer support and vendor reconciliation.\n",
+        "durationMs": 19781,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 50,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 65,
+          "evidenceReversibility": 100,
+          "overall": 76,
+          "matchedTargetPatterns": ["Transactional Outbox"],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [
+            "Distributed transaction",
+            "Compensating action",
+            "Eventual consistency"
+          ],
+          "detectedRollback": true,
+          "detectedMeasurements": true,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-07-lost-concurrent-updates",
+        "scenarioTitle": "Shared Resource Concurrent Overwrites",
+        "category": "concurrency",
+        "mode": "mcp-enhanced",
+        "output": "To detect and prevent lost updates in a PostgreSQL/TypeScript stack where users edit records via standard request/response cycles, you should implement **Optimistic Concurrency Control (OCC)**.\n\n---\n\n### Why Optimistic Concurrency Control Fits\nIn web/API applications, support agents read data, think, and fill out forms over seconds or minutes. **Pessimistic Locking** (`SELECT FOR UPDATE`) cannot be held open across HTTP requests without consuming database connections and risking deadlocks.\n\nOCC avoids long-lived locks by allowing concurrent reads, but ensuring that writes only succeed if the underlying record has not changed since it was read.\n\n---\n\n### Implementation Architecture\n\n#### 1. PostgreSQL Schema Modification\nAdd an integer `version` column (or auto-incrementing counter/UUID) to the target table:\n\n```sql\nALTER TABLE customer_records \nADD COLUMN version INT NOT NULL DEFAULT 1;\n```\n\n#### 2. Atomic Conditional Update (SQL)\nWhen performing an update, include the `version` read by the client in the `WHERE` clause, and increment `version` atomically on success:\n\n```sql\nUPDATE customer_records\nSET \n  name = $1,\n  email = $2,\n  version = version + 1,\n  updated_at = NOW()\nWHERE id = $3 AND version = $4;\n```\n\nIf another agent submitted a write first, the row’s version was already incremented to `$4 + 1`. The `WHERE` clause will fail to match any rows, returning `rowCount = 0`.\n\n---\n\n### TypeScript Implementation Example\n\n```typescript\nimport { Pool } from 'pg';\n\nexport class StaleRecordError extends Error {\n  constructor(public recordId: string, public attemptedVersion: number) {\n    super(`Conflict detected: Customer record ${recordId} was modified by another agent.`);\n    this.name = 'StaleRecordError';\n  }\n}\n\ninterface UpdateCustomerDTO {\n  id: string;\n  name: string;\n  email: string;\n  expectedVersion: number;\n}\n\nexport async function updateCustomerRecord(\n  db: Pool,\n  dto: UpdateCustomerDTO\n): Promise<{ id: string; name: string; email: string; version: number }> {\n  const query = `\n    UPDATE customer_records\n    SET \n      name = $1,\n      email = $2,\n      version = version + 1,\n      updated_at = NOW()\n    WHERE id = $3 AND version = $4\n    RETURNING id, name, email, version;\n  `;\n\n  const result = await db.query(query, [\n    dto.name,\n    dto.email,\n    dto.id,\n    dto.expectedVersion,\n  ]);\n\n  // If rowCount is 0, the record was updated concurrently by another user\n  if (result.rowCount === 0) {\n    throw new StaleRecordError(dto.id, dto.expectedVersion);\n  }\n\n  return result.rows[0];\n}\n```\n\n---\n\n### API & Frontend Handling Strategies\n\n1. **Return `409 Conflict` on Error**:\n   When `StaleRecordError` is caught at the API layer, map it to an `HTTP 409 Conflict` status code containing the fresh record state.\n2. **User Conflict Resolution Options**:\n   * **Warn & Diff**: Display a modal showing the agent what changed between their stale draft and the newly saved state.\n   * **Re-fetch & Re-apply**: Reload the updated record, incrementing the client-side version token to the latest version before allowing the agent to resubmit.\n\n---\n\n### Tradeoff Comparison: OCC vs. Pessimistic Locking\n\n| Pattern | How It Works | Best Used For | Drawbacks |\n| :--- | :--- | :--- | :--- |\n| **Optimistic Concurrency Control (OCC)** | Version checks on `UPDATE` statements; throws on mismatch. | Web/Mobile applications, lower-to-moderate write contention, user \"think-time\". | Requires application/frontend conflict resolution logic when conflicts occur. |\n| **Pessimistic Locking (`SELECT FOR UPDATE`)** | Obtains exclusive row locks inside a DB transaction. | High contention batch jobs, automated transfers, short-lived DB operations. | Holds connection pool slots open, degrades throughput, prone to deadlocks if locks aren't acquired in strict order. |\n",
+        "durationMs": 13977,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 50,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 80,
+          "evidenceReversibility": 65,
+          "overall": 72,
+          "matchedTargetPatterns": ["Optimistic Concurrency Control"],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": ["Lost update prevention", "Versioned state", "Conflict detection"],
+          "detectedRollback": false,
+          "detectedMeasurements": true,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-08-premature-microservices-split",
+        "scenarioTitle": "Small Team Premature Microservices Decomposition",
+        "category": "anti-cargo-cult",
+        "mode": "mcp-enhanced",
+        "output": "### 1. Proposal Evaluation & Verdict\n\n**Verdict: Strongly Reject the Proposal.**\n\nSplitting a **5,000-line codebase** into **8 microservices** on **Kubernetes with Istio** for a **3-person team** is an extreme architectural anti-pattern. \n\n* **Code Granularity:** An 8-way split of 5,000 lines yields an average of **~625 lines of code per service**. The YAML configuration, build pipelines, and mesh infrastructure code will quickly exceed the size of the application domain logic.\n* **Team Capacity:** 3 engineers owning 8 microservices plus Kubernetes and Istio results in **0.37 developers per service**. The team's capacity will shift almost entirely from shipping product features to maintaining distributed infrastructure.\n\n---\n\n### 2. Misuse & Cargo-Cult Risk Analysis\n\n#### A. Premature Optimization (\"Scale Like Netflix\")\n* **Context Mismatch:** Netflix adopted microservices to coordinate thousands of engineers across hundreds of autonomous teams serving hundreds of millions of concurrent video streams across global regions.\n* **The Cargo-Cult Fallacy:** Adopting the architecture of a multi-billion dollar enterprise does not convey its scale; it only conveys its operational tax. Architectural complexity must react to concrete scaling bottlenecks and team boundaries, not aspirational organizational size.\n\n#### B. The Infrastructure & Operational Tax Taxing a 3-Person Team\n* **Istio & Kubernetes Overhead:** Operating a production-grade Kubernetes cluster with an Istio control plane requires configuring mutual TLS (mTLS), Envoy sidecars, ingress gateways, traffic routing CRDs (`VirtualService`, `DestinationRule`), and continuous upgrades. This consumes significant engineering overhead that a 3-person team cannot afford.\n* **Observability Complexity:** Moving from in-process function calls to distributed network calls requires distributed tracing (Jaeger/Zipkin), centralized log aggregation (ELK/Loki), network policy management, and complex metric correlation just to debug standard runtime bugs.\n\n#### C. Distributed Systems Failure Modes Introduced Prematurely\n* **Latency & Failure Amplification:** In-process nanosecond function calls become millisecond HTTP/gRPC network hops subject to network jitter, timeouts, connection pooling limits, and cascading downstream failures.\n* **Consistency & Transaction Loss:** Single-database ACID transactions are lost. Cross-service operations will now require multi-phase commits or Saga patterns, handling eventual consistency, idempotency keys, and compensation workflows for ~625-line sub-domains.\n\n---\n\n### 3. Recommended Architectural Structure: Modular Monolith\n\nRather than a distributed system, the team should adopt a **Modular Monolith** using **Ports & Adapters (Hexagonal Architecture)**.\n\n```\n┌────────────────────────────────────────────────────────────────────────┐\n│                          Modular Monolith                              │\n│                                                                        │\n│  ┌────────────────────┐   ┌────────────────────┐   ┌────────────────┐  │\n│  │   Identity Module  │   │   Order Module     │   │ Billing Module │  │\n│  │ ┌────────────────┐ │   │ ┌────────────────┐ │   │ ┌────────────┐ │  │\n│  │ │ Domain / Port  │ │   │ │ Domain / Port  │ │   │ │ Domain/Port│ │  │\n│  │ └───────┬────────┘ │   │ └───────┬────────┘ │   │ └─────┬──────┘ │  │\n│  └─────────┼──────────┘   └─────────┼──────────┘   └───────┼────────┘  │\n│            └────────────────────────┼──────────────────────┘           │\n│                                     ▼                                  │\n│                       In-Process Event Bus / Services                  │\n└────────────────────────────────────────────────────────────────────────┘\n                                      │\n                                      ▼\n                        Single Relational Database\n```\n\n#### Key Architecture Principles for the Team\n1. **Single Deployable Unit:** Run a single binary or container on a simplified managed container platform (e.g., AWS ECS/App Runner, GCP Cloud Run, or simple PaaS).\n2. **Explicit Bounded Contexts:** Structure code folders around business domains rather than technical layers (e.g., `modules/orders`, `modules/billing`), disallowing cross-module direct database access or implicit imports.\n3. **In-Process Interface Contracts:** Modules communicate exclusively through strongly typed internal interfaces or in-process event emitters.\n4. **Isolated Schemas / Logical Separation:** Keep database tables logically grouped per module. Prevent cross-module SQL joins at the database level to ensure low coupling.\n\n---\n\n### 4. Comparison & Tipping Points\n\n| Dimension | Proposed Microservices + Mesh | Recommended Modular Monolith |\n| :--- | :--- | :--- |\n| **Deployables** | 8 services + K8s control plane + Istio mesh | 1 container / binary |\n| **Operational Overhead** | Extremely High (K8s, Envoy, Mesh policies) | Minimal (PaaS / Single Container App) |\n| **Data Consistency** | Eventual / Distributed Sagas | Strong ACID Transactions |\n| **Debugging Complexity** | High (Distributed traces, network logs) | Low (In-process stack traces, local profiling) |\n| **Feature Velocity** | Low (Cross-service PRs, schema deployments) | High (Single repo, direct refactoring) |\n\n#### Re-evaluation Tipping Points (When to reconsider Microservices)\nDo not split out a microservice until **all** of the following conditions are met:\n1. **Team Scale:** The engineering team grows beyond 15–20 engineers where git merge conflicts and release coordination become the primary bottleneck.\n2. **Asymmetric Scaling:** A single domain module (e.g., video processing or heavy analytics) requires $10\\times$ more compute or specific hardware (GPUs/memory) compared to the rest of the application.\n3. **Isolated Delivery Requirements:** A specific sub-domain requires independent compliance, security isolation, or deployment lifecycles that block the rest of the team.\n",
+        "durationMs": 29809,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 100,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 100,
+          "evidenceReversibility": 65,
+          "overall": 93,
+          "matchedTargetPatterns": ["Modular Monolith"],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": [
+            "Operational complexity budget",
+            "Small team capacity",
+            "Codebase modularity without distributed overhead"
+          ],
+          "detectedRollback": false,
+          "detectedMeasurements": true,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-09-runtime-algorithm-variation",
+        "scenarioTitle": "Dynamic Pricing and Discount Strategy Selection",
+        "category": "domain-modeling",
+        "mode": "mcp-enhanced",
+        "output": "To eliminate fragile `if-else` blocks and make pricing extensibility compliant with the **Open/Closed Principle** (open for extension, closed for modification), you should combine the **Strategy Pattern** with a **Pipeline / Rules Composition Engine**.\n\n---\n\n### Core Architecture\n\n1. **Strategy Interface**: Define a common interface for all promotional rules and discount logic.\n2. **Concrete Strategies**: Implement individual, isolated strategy classes/functions for coupons, B2B tiers, seasonal promotions, etc.\n3. **Discount Pipeline (Engine)**: Context object aggregates cart details and pipes it through active strategies without `checkout.ts` needing to know rule specifics.\n\n---\n\n### TypeScript Implementation Example\n\n#### 1. Define Context and Strategy Interfaces\n\n```typescript\nexport interface CartItem {\n  id: string;\n  price: number;\n  quantity: number;\n  category: string;\n}\n\nexport interface CheckoutContext {\n  items: CartItem[];\n  userTier?: 'STANDARD' | 'B2B_TIER_1' | 'B2B_TIER_2';\n  couponCode?: string;\n  subtotal: number;\n  totalDiscount: number;\n}\n\nexport interface DiscountStrategy {\n  name: string;\n  isApplicable(context: Readonly<CheckoutContext>): boolean;\n  apply(context: Readonly<CheckoutContext>): number; // returns discount amount\n}\n```\n\n#### 2. Isolated Rule Strategies\n\n```typescript\n// B2B Pricing Strategy\nexport class B2BDiscountStrategy implements DiscountStrategy {\n  name = 'B2B Tier Discount';\n\n  isApplicable(context: Readonly<CheckoutContext>): boolean {\n    return context.userTier?.startsWith('B2B') ?? false;\n  }\n\n  apply(context: Readonly<CheckoutContext>): number {\n    const rate = context.userTier === 'B2B_TIER_1' ? 0.15 : 0.25;\n    return context.subtotal * rate;\n  }\n}\n\n// Coupon Strategy\nexport class PercentageCouponStrategy implements DiscountStrategy {\n  name = 'Percentage Coupon';\n  constructor(private code: string, private percentage: number) {}\n\n  isApplicable(context: Readonly<CheckoutContext>): boolean {\n    return context.couponCode === this.code;\n  }\n\n  apply(context: Readonly<CheckoutContext>): number {\n    return context.subtotal * (this.percentage / 100);\n  }\n}\n```\n\n#### 3. Pipeline Evaluator\n\n```typescript\nexport class DiscountEngine {\n  private strategies: DiscountStrategy[] = [];\n\n  register(strategy: DiscountStrategy): void {\n    this.strategies.push(strategy);\n  }\n\n  calculateDiscounts(initialContext: CheckoutContext): CheckoutContext {\n    let context = { ...initialContext };\n\n    for (const strategy of this.strategies) {\n      if (strategy.isApplicable(context)) {\n        const discount = strategy.apply(context);\n        context.totalDiscount += discount;\n      }\n    }\n\n    return context;\n  }\n}\n```\n\n#### 4. Decoupled Checkout Flow\n\n```typescript\n// checkout.ts remains unmodified when adding new promotional rules\nexport function calculateCheckoutTotal(\n  items: CartItem[],\n  userTier?: string,\n  couponCode?: string,\n  engine: DiscountEngine = defaultEngine\n): number {\n  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);\n  \n  const resultContext = engine.calculateDiscounts({\n    items,\n    userTier: userTier as any,\n    couponCode,\n    subtotal,\n    totalDiscount: 0,\n  });\n\n  return Math.max(0, resultContext.subtotal - resultContext.totalDiscount);\n}\n```\n\n---\n\n### Trade-Offs & Architectural Tipping Points\n\n| Strategy | Direct `if-else` | Strategy / Pipeline | Rules Engine (e.g. JSON/DB driven) |\n| :--- | :--- | :--- | :--- |\n| **Coupling** | High (Modifies `checkout.ts`) | Low (Isolated strategy files) | Zero (Code decoupled from rules) |\n| **Testability** | Hard (Combinatorial explosions) | High (Test each rule independently) | High (Data-driven schema validation) |\n| **Complexity Penalty** | Minimal initial cost | Low cost, high safety | High operational complexity |\n\n* **Adopt Strategy / Pipeline when**: Promotions change frequently in code, are maintained by developers, and need isolated unit testing and independent rollouts.\n* **Upgrade to a Decision Table / Rules Engine when**: Marketing/business non-developers need to update promo schedules dynamically without requiring code deployments or builds.\n",
+        "durationMs": 35451,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 50,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 100,
+          "evidenceReversibility": 30,
+          "overall": 69,
+          "matchedTargetPatterns": ["Strategy"],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": ["Open/Closed Principle", "Isolated discount calculations"],
+          "detectedRollback": false,
+          "detectedMeasurements": false,
+          "directSolutionCorrectlyIdentified": true
+        }
+      },
+      {
+        "scenarioId": "scenario-10-legacy-system-safe-migration",
+        "scenarioTitle": "Strangler Migration of Legacy Billing Monolith",
+        "category": "refactoring-smells",
+        "mode": "mcp-enhanced",
+        "output": "Migrating a high-value financial engine processing $2M/day requires a zero-downtime, fault-tolerant strategy built around the **Strangler Fig** pattern backed by an **Anti-Corruption Layer (ACL)** and **Shadow Replay Verification**. \n\nThe goal is to intercept incoming traffic at the API boundary, route transactions incrementally, dynamically fall back to legacy on errors, and ensure financial consistency across both systems before decommissioning legacy code.\n\n---\n\n### Architecture Overview\n\n```\n                      +-------------------+\n                      |   Ingress API /   |\n                      |   Smart Router    |\n                      +---------+---------+\n                                |\n                 +--------------+--------------+\n                 |                             |\n      (Migrated Routes)              (Legacy Fallback / Default)\n                 v                             v\n      +-------------------+          +-------------------+\n      |   New Billing     |          |  Legacy Billing   |\n      |     Module        |          |      Module       |\n      +---------+---------+          +---------+---------+\n                |                              |\n                v                              v\n      +-------------------+          +-------------------+\n      | Anti-Corruption   |          | Legacy Database / |\n      | Layer (ACL Adapter|          | Data Store        |\n      +---------+---------+          +-------------------+\n                |                              ^\n                +------ Async CDC / Reconciler-+\n```\n\n---\n\n### 1. Traffic Routing & Instant Fallback Engine (Strangler Gateway)\n\nPlace a lightweight, high-performance gateway (or sidecar proxy) in front of the billing system to intercept API calls per route.\n\n* **Dynamic Route Selector**: Route incoming requests based on route paths (e.g., `/v2/invoices/charge`), customer tier, or percentage rollouts.\n* **Instant Fallback Wrapper**: For migrated routes, execute the new billing service inside an explicit fallback execution block. If the new service times out, throws a `5xx` error, or breaches latency SLA thresholds, fall back synchronously to the legacy module within milliseconds.\n\n#### Gate & Circuit Breaker Logic (TypeScript Example)\n\n```typescript\nexport interface BillingResponse {\n  transactionId: string;\n  status: 'SUCCESS' | 'FAILED';\n  amountCents: number;\n}\n\nexport class StranglerBillingRouter {\n  constructor(\n    private legacyService: LegacyBillingService,\n    private newService: ModernBillingService,\n    private featureFlags: FeatureFlagClient,\n    private circuitBreaker: CircuitBreaker\n  ) {}\n\n  async processCharge(request: ChargeRequest): Promise<BillingResponse> {\n    const routeKey = `billing.charge.${request.paymentMethodType}`;\n    const isMigrated = await this.featureFlags.isRouteEnabled(routeKey, request.tenantId);\n\n    if (!isMigrated || this.circuitBreaker.isOpen(routeKey)) {\n      return this.legacyService.processCharge(request);\n    }\n\n    try {\n      // Execute modern billing module with hard timeout limit (e.g., 800ms)\n      return await this.circuitBreaker.execute(\n        () => this.newService.processCharge(request),\n        { timeoutMs: 800 }\n      );\n    } catch (error) {\n      // Log anomaly & trigger zero-downtime instant legacy fallback\n      metrics.increment('billing.new_service.fallback_count', { route: routeKey });\n      logger.error('New billing service failed, executing legacy fallback', { error, request });\n      \n      return this.legacyService.processCharge(request);\n    }\n  }\n}\n```\n\n---\n\n### 2. Verification Strategy: Dark Launch & Async Replay (Shadowing)\n\nTo verify correctness on $2M/day volume before enabling real traffic, run incoming production transactions through a **Shadow Pipeline**.\n\n1. **Production Writes Legacy First**: Incoming production requests trigger the legacy billing engine (source of truth).\n2. **Asynchronous Replay**: Request payloads are cloned and emitted asynchronously via Kafka/SQS to the new billing service running in shadow mode.\n3. **Parity Checker / Reconciler**: The output of the modern service is compared against the legacy execution log. Any discrepancies in total charges, taxes, discounts, or state transitions raise alerting metrics without impacting production.\n\n```\nRequest ---> [ Legacy Billing (Live Write) ] ---> Return Response to User\n                      |\n           (Async Payload Event)\n                      v\n             [ New Billing Service ]\n                      |\n             [ Diff Engine / Audit Log ] ---> Alert on Parity Discrepancies\n```\n\n---\n\n### 3. State & Ledger Synchronization (Dual-Write / CDC)\n\nFinancial data cannot tolerate split-brain states or duplicate charges during route migration.\n\n* **Anti-Corruption Layer (ACL)**: Map legacy database entities and status codes to modern domain models through explicit schema adapters, isolating the legacy schema clean of modern leaks.\n* **Change Data Capture (CDC)**: Use Debezium to stream database mutations from legacy DB to modern DB during the transition phase.\n* **Idempotency Keys**: Enforce strict client-generated idempotency keys (e.g., `UUIDv4` per checkout attempt) across both legacy and modern gateways to guarantee no double charges occur during fallbacks.\n\n---\n\n### 4. Step-by-Step Migration Roadmap\n\n| Phase | Action | Traffic % | Purpose | Fallback Risk |\n| :--- | :--- | :--- | :--- | :--- |\n| **Phase 0: Baseline & Interception** | Deploy API Gateway and ACL abstractions. | 0% Modern / 100% Legacy | Establish route boundaries, establish telemetry baselines. | Zero |\n| **Phase 1: Dark Launch (Replay)** | Duplicate production requests to new module asynchronously. | 0% Modern / 100% Legacy (Shadow Reads) | Verify parity on edge-case calculations (taxes, discounts). | Zero |\n| **Phase 2: Canary Shift (Route 1)** | Enable lowest-risk billing route (e.g., `One-Time Micro-Charges`). | 1% -> 10% -> 100% per target route | Validate end-to-end flow with automated dynamic fallback. | Low (Instant Fallback) |\n| **Phase 3: Broad Route Rollout** | Migrate remaining high-volume routes sequentially. | Route-by-route incremental shift | Move subscription renewals, invoicing, and refunds. | Managed via Circuit Breaker |\n| **Phase 4: Legacy Retirement** | Remove fallback logic, ACL wrappers, and legacy database sync. | 100% Modern | Clean up codebase and decommission legacy infra. | N/A (Fully Cutover) |\n\n---\n\n### Key Operational Guards\n\n1. **Automated Rollback Threshold**: Configure the gateway feature flags to automatically disable a route if error rates exceed 0.01% or p99 latency breaches 1.5x baseline over a rolling 5-minute window.\n2. **Reconciliation Auditing Engine**: Run an off-peak daily batch reconciler comparing total balance entries in ledger schemas between systems until legacy is offline.\n",
+        "durationMs": 28271,
+        "toolsUsed": [],
+        "evaluation": {
+          "decisionSoundness": 63,
+          "antiCargoCult": 100,
+          "maintainabilityQuality": 65,
+          "evidenceReversibility": 100,
+          "overall": 80,
+          "matchedTargetPatterns": ["Strangler Fig", "Anti-Corruption Layer"],
+          "flaggedContraindicatedPatterns": [],
+          "matchedForces": ["Zero downtime migration", "Incremental traffic steering"],
+          "detectedRollback": true,
+          "detectedMeasurements": true,
+          "directSolutionCorrectlyIdentified": true
+        }
+      }
+    ]
+  }
+}
