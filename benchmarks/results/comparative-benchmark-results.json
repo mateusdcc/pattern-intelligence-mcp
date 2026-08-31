@@ -1,0 +1,358 @@
+{
+  "timestamp": "2026-08-31T13:04:17.417Z",
+  "model": "gemini-3.6-flash",
+  "provider": "antigravity",
+  "scenariosCount": 5,
+  "harnesses": [
+    {
+      "harnessId": "ponytail",
+      "harnessName": "Ponytail (DietrichGebert/ponytail)",
+      "noMcp": {
+        "overall": 86.6,
+        "soundness": 76.2,
+        "antiCargoCult": 100,
+        "quality": 75,
+        "evidence": 100,
+        "avgInputTokens": 4694,
+        "avgOutputTokens": 2117,
+        "avgTotalTokens": 16565,
+        "efficiency": 5.23,
+        "runs": [
+          {
+            "scenarioId": "scenario-01-carrier-boundary",
+            "scenarioTitle": "Third-Party Carrier API Interface Insulation",
+            "category": "integration-boundaries",
+            "mode": "harness-without-mcp",
+            "output": "\n### 1. Core Architectural Strategy: Ports & Adapters (Hexagonal Isolation)\n\nWhen vendor SDK models leak across domain files, your core business logic becomes tightly coupled to external API schemas. A breaking change in FedEx's v3 payload or UPS's REST schema will ripple through all 19 domain files.\n\nTo fix this cleanly without enterprise over-engineering, adopt **Ports & Adapters (Hexagonal Architecture)** with an **Anti-Corruption Layer (ACL)**:\n\n```\n[ Domain Services / Core Logic ]\n               │\n               ▼ (depends on)\n   [ ShippingCarrier Port ] (Domain Interface)\n               ▲\n               │ (implements)\n ┌─────────────┼──────────────┐\n │             │              │\n[FedEx Adapter] [UPS Adapter] [DHL Adapter]\n     │              │             │\n     ▼              ▼             ▼\n(FedEx SDK)     (UPS SDK)     (DHL SDK)\n```\n\n1. **Domain Isolation**: Core domain logic imports **zero** carrier SDK types. It depends only on domain entities (`Shipment`, `RateQuote`, `TrackingInfo`) and port interfaces (`ShippingCarrierPort`).\n2. **Anti-Corruption Layer**: Each carrier gets a single dedicated adapter folder containing schema mappers (`toDomainShipment`, `toFedExPayload`). Carrier SDK dependencies stay strictly confined to these adapter files.\n3. **Canonical Domain Schemas**: Define your unified domain types using Zod or pure TypeScript types representing *your* business needs, not vendor representations.\n\n---\n\n### 2. Concrete Implementation Blueprint\n\n#### A. Define the Domain Port & Canonical Models (`src/domain/shipping/`)\n\n```typescript\n// src/domain/shipping/carrier.port.ts\n\nexport type CarrierId = \"fedex\" | \"ups\" | \"dhl\";\n\nexport interface Address {\n  street: string[];\n  city: string;\n  state: string;\n  postalCode: string;\n  countryCode: string;\n}\n\nexport interface PackageSpec {\n  weightKg: number;\n  dimensionsCm: { length: number; width: number; height: number };\n}\n\nexport interface CreateShipmentParams {\n  origin: Address;\n  destination: Address;\n  packages: PackageSpec[];\n}\n\nexport interface LabelResult {\n  trackingNumber: string;\n  labelBuffer: Buffer;\n  format: \"pdf\" | \"zpl\";\n  carrier: CarrierId;\n}\n\nexport interface ShippingCarrierPort {\n  readonly carrierId: CarrierId;\n  createShipment(params: CreateShipmentParams): Promise<LabelResult>;\n  getTrackingStatus(trackingNumber: string): Promise<string>;\n}\n```\n\n#### B. Build Carrier-Specific Adapters (`src/infrastructure/carriers/`)\n\n```typescript\n// src/infrastructure/carriers/fedex/fedex.adapter.ts\nimport type { CreateShipmentParams, LabelResult, ShippingCarrierPort } from \"../../../domain/shipping/carrier.port\";\nimport { FedExClient } from \"./fedex-sdk-wrapper\"; // External vendor SDK import confined here\n\nexport class FedExAdapter implements ShippingCarrierPort {\n  readonly carrierId = \"fedex\" as const;\n\n  constructor(private readonly client: FedExClient) {}\n\n  async createShipment(params: CreateShipmentParams): Promise<LabelResult> {\n    const payload = this.toFedExPayload(params);\n    const response = await this.client.createShipment(payload);\n\n    return {\n      trackingNumber: response.output.transactionShipments[0].masterTrackingNumber,\n      labelBuffer: Buffer.from(response.output.transactionShipments[0].pieceResponses[0].packageDocuments[0].encodedLabel, \"base64\"),\n      format: \"pdf\",\n      carrier: this.carrierId,\n    };\n  }\n\n  async getTrackingStatus(trackingNumber: string): Promise<string> {\n    const response = await this.client.track(trackingNumber);\n    return response.completeTrackResults[0].trackResults[0].latestStatusDetail.statusByLocale;\n  }\n\n  private toFedExPayload(params: CreateShipmentParams) {\n    return {\n      requestedShipment: {\n        shipper: { address: { streetLines: params.origin.street, city: params.origin.city } },\n        recipients: [{ address: { streetLines: params.destination.street, city: params.destination.city } }],\n        requestedPackageLineItems: params.packages.map((pkg) => ({\n          weight: { value: pkg.weightKg, units: \"KG\" },\n        })),\n      },\n    };\n  }\n}\n```\n\n#### C. Carrier Registry / Factory (`src/infrastructure/carriers/carrier.registry.ts`)\n\n```typescript\n// src/infrastructure/carriers/carrier.registry.ts\nimport type { CarrierId, ShippingCarrierPort } from \"../../domain/shipping/carrier.port\";\n\nexport class CarrierRegistry {\n  private readonly carriers = new Map<CarrierId, ShippingCarrierPort>();\n\n  register(carrier: ShippingCarrierPort): void {\n    this.carriers.set(carrier.carrierId, carrier);\n  }\n\n  get(carrierId: CarrierId): ShippingCarrierPort {\n    const carrier = this.carriers.get(carrierId);\n    if (!carrier) {\n      throw new Error(`Carrier ${carrierId} is not configured.`);\n    }\n    return carrier;\n  }\n}\n```\n\n---\n\n### 3. Tradeoffs & Anti-Patterns to Avoid\n\n#### Tradeoffs\n\n- **Adapter Overhead**: You must write bidirectional mappers for every carrier operation. (Benefit: Vendor API changes only require editing one adapter file).\n- **Least Common Denominator Risk**: Unified ports might obscure carrier-specific features (e.g., DHL customs attachments vs UPS hazmat flags).\n  - *Mitigation*: Pass an optional `metadata` or `carrierOptions` record keyed by carrier ID in `CreateShipmentParams` for isolated vendor extensions without breaking the port interface.\n\n#### Anti-Patterns to Avoid\n\n- **No Heavy DI Containers**: Avoid adding NestJS or Inversify container frameworks just for carrier routing. A plain TS `Map` or factory function is completely sufficient.\n- **No Leaky Provider Types**: Never expose vendor types (e.g. `FedExTrackingResponse`) in domain service signatures or database schemas.\n\n---\n\n### 4. Reversible Adoption Plan\n\n#### Phase 1: Establish Boundaries & Canonical Schemas (1-2 days)\n1. Create `src/domain/shipping/carrier.port.ts` with minimal required methods (`createShipment`, `getTrackingStatus`).\n2. Add an ESLint restricted-imports rule to ban carrier SDK imports outside `src/infrastructure/carriers/*`:\n\n```json\n{\n  \"rules\": {\n    \"no-restricted-imports\": [\n      \"error\",\n      {\n        \"patterns\": [\n          {\n            \"group\": [\"@fedex/*\", \"@ups/*\", \"dhl-sdk\"],\n            \"message\": \"Vendor SDKs can only be imported inside src/infrastructure/carriers/\"\n          }\n        ]\n      }\n    ]\n  }\n}\n```\n\n#### Phase 2: Migrate One Carrier at a Time (3-5 days)\n1. Implement `FedExAdapter` first behind the port interface.\n2. Update callers in the 19 domain files using FedEx to use `ShippingCarrierPort` instead.\n3. Delete FedEx SDK model references from domain files.\n4. Repeat sequentially for UPS and DHL.\n\n#### Phase 3: Consolidation & Clean-Up (1 day)\n1. Remove unused vendor SDK models and dead conversion utility code.\n2. Verify domain tests pass using simple in-memory mock adapters without network or vendor SDK mocks.\n\n#### Tipping Points & Zero-Friction Rollback Triggers\n\n- **Rollback Trigger**: If a unified carrier port blocks a critical carrier-specific API capability during migration, pass carrier-specific options via an isolated `carrierOptions?: Record<CarrierId, unknown>` escape hatch rather than abandoning the port interface.\n- **Tipping Point**: Revisit the adapter design if business requirements change to support dynamic multi-carrier routing per parcel item, at which point you elevate carrier adapters to a Strategy pattern pipeline.",
+            "durationMs": 10740,
+            "toolsUsed": ["bash"],
+            "usage": {
+              "input": 8688,
+              "output": 3019,
+              "cacheRead": 16256,
+              "totalTokens": 27963
+            },
+            "evaluation": {
+              "decisionSoundness": 100,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 80,
+              "evidenceReversibility": 100,
+              "overall": 96,
+              "matchedTargetPatterns": ["Adapter", "Anti-Corruption Layer", "Strategy"],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": ["Interface incompatibility", "Vendor independence"],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          },
+          {
+            "scenarioId": "scenario-02-dual-write-consistency",
+            "scenarioTitle": "Database Update and Event Broker Dual Write",
+            "category": "data-consistency",
+            "mode": "harness-without-mcp",
+            "output": "\n### Solution: Transactional Outbox Pattern\n\nThe standard, minimal architecture to guarantee at-least-once delivery and eliminate dual-write data loss without distributed 2PC locking is the **Transactional Outbox Pattern**.\n\n---\n\n### 1. Architectural Design\n\nInstead of making an external network call to Kafka during the HTTP user registration transaction:\n\n1. **Atomic Postgres Write**:\n   Save both the user record and the event payload into PostgreSQL within the same local ACID transaction.\n   ```sql\n   BEGIN;\n   INSERT INTO users (id, email, created_at) VALUES ($1, $2, NOW());\n   INSERT INTO outbox_events (id, aggregate_type, aggregate_id, event_type, payload, status)\n   VALUES (gen_random_uuid(), 'user', $1, 'USER_REGISTERED', $3, 'PENDING');\n   COMMIT;\n   ```\n   If PostgreSQL succeeds, the event is guaranteed to be persisted. If PostgreSQL fails, neither the user nor the event is saved.\n\n2. **Asynchronous Outbox Relay**:\n   A lightweight background process reads pending events from `outbox_events`, publishes them to Kafka, and updates/deletes the outbox record once Kafka returns a successful ACK.\n\n3. **Consumer Idempotency**:\n   Because network retries between the relay and Kafka can produce duplicate messages, consumers must track processed `outbox_events.id` values to ensure idempotent processing (achieving true at-least-once delivery).\n\n---\n\n### 2. Practical Implementation (Minimalist Setup)\n\nAvoid adding heavy CDC tooling (like Debezium) until scale requires it. Start with simple row-level lock polling:\n\n```sql\nSELECT * FROM outbox_events\nWHERE status = 'PENDING'\nORDER BY created_at ASC\nLIMIT 100\nFOR UPDATE SKIP LOCKED;\n```\n\n- **`FOR UPDATE SKIP LOCKED`** allows multiple relay workers to fetch distinct batches concurrently without blocking each other or lock contention.\n- On Kafka ACK confirmation:\n  ```sql\n  DELETE FROM outbox_events WHERE id = ANY($1);\n  ```\n  *(Deleting processed rows keeps outbox table size small and query index fast).*\n\n---\n\n### 3. Concrete Tipping Points & Evolution Path\n\n| Stage | Trigger Metric | Architecture Action |\n| :--- | :--- | :--- |\n| **Stage 1 (Current)** | < 500 registrations/sec | Simple Postgres `outbox_events` table + Polling worker with `SKIP LOCKED`. Zero extra infra. |\n| **Stage 2 (Scale)** | > 2,000 registrations/sec or high Postgres disk IOPS | Switch outbox worker to Postgres Change Data Capture (CDC) reading the WAL via Postgres logical replication (e.g., Debezium). Application write pattern remains identical. |\n\n---\n\n### 4. Rollback & Resilience Strategy\n\n- **Kafka Downtime**: If Kafka goes offline, user registrations continue without interruption. Events queue safely in PostgreSQL `outbox_events` until Kafka recovers.\n- **Relay Failure**: If the background worker crashes, uncommitted rows remain marked as `PENDING` and are immediately picked up by the next worker instance.\n- **Rollback Trigger**: If message ordering per user is broken during high concurrency, partition outbox relay dispatch by `aggregate_id` hash across dedicated worker threads.",
+            "durationMs": 8078,
+            "toolsUsed": [],
+            "usage": {
+              "input": 3690,
+              "output": 2257,
+              "cacheRead": 8128,
+              "totalTokens": 14075
+            },
+            "evaluation": {
+              "decisionSoundness": 75,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 50,
+              "evidenceReversibility": 100,
+              "overall": 81,
+              "matchedTargetPatterns": ["Transactional Outbox", "Change Data Capture"],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": [
+                "Dual-write hazard",
+                "At-least-once delivery",
+                "Atomicity without 2PC"
+              ],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          },
+          {
+            "scenarioId": "scenario-03-downstream-resilience",
+            "scenarioTitle": "Downstream Service Outage & Cascade Prevention",
+            "category": "resilience",
+            "mode": "harness-without-mcp",
+            "output": "\nTo isolate the degrading vendor dependency and prevent API connection pool exhaustion, apply four core resilience patterns using simple, in-memory primitives.\n\n---\n\n### 1. Architectural Resilience Patterns\n\n#### A. Strict Client Timeouts (Immediate Fail-Fast)\n- **Problem**: Default HTTP clients often have infinite or long (e.g., 30s-60s) read timeouts.\n- **Pattern**: Configure an aggressive, explicit read/socket timeout (e.g., 1.5s to 2s based on your P99 SLA).\n- **Outcome**: Reclaims waiting threads/connections immediately instead of holding them for 20s.\n\n#### B. Bulkhead Isolation (Resource Containment)\n- **Problem**: Payment scoring requests share thread workers and database/HTTP connection pools with core API endpoints.\n- **Pattern**: Isolate outbound vendor traffic into a dedicated, bounded HTTP connection pool and worker queue (e.g., maximum 10-20 concurrent connections).\n- **Outcome**: When the vendor degrades, only the payment scoring pool saturates. Main API endpoints continue serving traffic normally.\n\n#### C. Circuit Breaker (Cascading Failure Prevention)\n- **Problem**: Continuing to send thousands of requests to a failing service worsens latency and drains resources.\n- **Pattern**: Implement a lightweight state machine around the vendor client:\n  - **Closed**: Normal operations.\n  - **Open**: When error/timeout rate exceeds a threshold (e.g., 50% over 10s), trip immediately to Open. Fail fast without making network calls.\n  - **Half-Open**: After a cooldown window (e.g., 30s), allow a single probe request to check if the vendor recovered.\n- **Outcome**: Protects your API from making doomed downstream calls during outages.\n\n#### D. Graceful Fallback (Business Continuity)\n- **Problem**: Failing fast throws 500 errors to users if unhandled.\n- **Pattern**: Define a deterministic fallback when the circuit is open or requests time out:\n  - **Rule-Based Fallback**: Apply conservative static risk rules locally.\n  - **Async Queueing**: Accept the transaction into a pending/manual review state for background scoring re-try.\n  - **Default Score**: Assign a neutral safety score if risk tolerance permits.\n\n---\n\n### 2. Recommended Minimalist Architecture\n\n```\n[ Incoming Request ]\n         │\n         ▼\n[ Core API Pool ]  ───(Unaffected)───► Core Endpoints & Database\n         │\n         ▼\n┌─────────────────────────────────────────────────────────┐\n│ Payment Scoring Adapter (Isolated Boundary)            │\n│                                                         │\n│  ┌──────────────────┐    ┌───────────────────────────┐  │\n│  │ Circuit Breaker  │───►│ Dedicated Connection Pool │  │\n│  └────────┬─────────┘    │ (Max 10 Concurrency, 2s) │  │\n│           │              └─────────────┬─────────────┘  │\n│       (If Open/                        │                │\n│        Timeout)                        ▼                │\n│           │               [ Vendor Endpoint (20s) ]     │\n│           ▼                         │                   │\n│  [ Local Fallback Logic ] ◄─────────┘ (Fails Fast)      │\n└─────────────────────────────────────────────────────────┘\n```\n\nAvoid adding heavy external service meshes (e.g., Envoy/Istio) or distributed proxy sidecars if an in-memory client wrapper (such as Resilience4j in Java, `opossum` in Node.js, `gobreaker` in Go, or `tenacity`/`pybreaker` in Python) solves the problem inside your existing application process.\n\n---\n\n### 3. Concrete Tipping Points & Reversibility\n\n| Metric / Trigger | Action / Tipping Point |\n| :--- | :--- |\n| **Timeout Threshold** | Set HTTP read timeout at **1.5s** (P99 + 500ms margin). |\n| **Circuit Trip Threshold** | Trip to OPEN when **50% of requests fail/timeout** over a rolling 10-second window. |\n| **Bulkhead Limit** | Cap dedicated vendor connections to **10% of total API worker capacity**. |\n| **Scale Tipping Point** | Revisit in-memory circuit breakers only if running across >50 horizontal stateless nodes where localized circuit states become inconsistent. Only then consider a shared Redis-backed breaker state. |\n| **Rollback Trigger** | If vendor response P99 stabilizes below **300ms** over a 7-day period, adjust timeout bounds or disable fallback queues. |",
+            "durationMs": 7433,
+            "toolsUsed": [],
+            "usage": {
+              "input": 3676,
+              "output": 1914,
+              "cacheRead": 8128,
+              "totalTokens": 13718
+            },
+            "evaluation": {
+              "decisionSoundness": 81,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 65,
+              "evidenceReversibility": 100,
+              "overall": 86,
+              "matchedTargetPatterns": ["Circuit Breaker", "Timeout", "Bulkhead"],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": [
+                "Fault isolation",
+                "Bounded latency",
+                "Cascading failure prevention"
+              ],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          },
+          {
+            "scenarioId": "scenario-04-premature-cqrs-event-sourcing",
+            "scenarioTitle": "CRUD Admin Panel with Low Write Volume",
+            "category": "anti-cargo-cult",
+            "mode": "harness-without-mcp",
+            "output": "\n### Recommendation\n**Strongly Reject the Proposal.** Do not adopt Event Sourcing, CQRS, or Kafka for this use case.\n\n---\n\n### 1. Design & Cargo-Cult Risk Evaluation\n\n| Dimension | Proposal (Kafka + Event Sourcing + CQRS) | Actual Need (1,000 Records, 50 Writes/Day) | Risk Assessment |\n| :--- | :--- | :--- | :--- |\n| **Throughput & Scale** | Handles 100k+ events/sec | ~0.0006 writes/sec (~1 write every 30 mins) | Massive over-engineering. Kafka and event projections add zero benefit for static/low-write datasets. |\n| **Team Overhead** | Requires ongoing ops for Kafka (KRaft/ZooKeeper), Schema Registry, consumer lag monitoring, and projection repair | 2 developers writing standard feature code | 2 developers will spend majority of their time managing stream infra and event schema migrations. |\n| **System Complexity** | Eventual consistency, out-of-order event handling, dual-write issues, replay bugs, read-projection sync lag | Strong ACID consistency in a single database transaction | Eventual consistency introduces UI race conditions (e.g., editing an employee name doesn't immediately reflect in search). |\n\n#### Core Cargo-Cult Risks Detected\n1. **Premature Optimization under the guise of \"Future-Proofing\":** Designing for hypotheticals that are orders of magnitude away creates real operational debt today for theoretical scale tomorrow.\n2. **Accidental Complexity:** Event Sourcing forces the team to manage event schema evolution (upcasting/downcasting past events) and projection rebuilds for data that fits entirely in memory on a modern laptop (~100 KB total payload).\n\n---\n\n### 2. Recommended Maintainable Path\n\n#### Architecture: Minimalist Relational Monolith\n- **Storage:** Single PostgreSQL or SQLite database.\n- **Data Model:** A single `employees` table with standard CRUD endpoints.\n- **Auditability (if change tracking is required):** Use a simple `employee_audit_logs` table appended via DB triggers or application-level logging instead of full Event Sourcing.\n\n#### Benefits\n- **Zero Operational Debt:** Fits on a single small container/VM or serverless DB instance.\n- **Immediate Consistency:** Simple transactional read-after-write logic for UI and API consumers.\n- **Fast Developer Onboarding:** Any standard full-stack engineer can maintain and extend the system in minutes without learning event replay or CQRS projection pipelines.\n\n---\n\n### 3. Tipping Points & Reversibility\n\n#### Tipping Points to Revisit Architecture\nReconsider CQRS or asynchronous event streaming only if the system crosses **all** of the following metrics:\n- **Write Volume:** Writes exceed 5,000 events/second continuously.\n- **Team Size:** Multiple independent domain teams require decoupled, eventual-consistent views of employee data.\n- **Domain Needs:** Complex multi-system event-driven workflows require cross-service event orchestration.\n\n#### Rollback Trigger (If Already Partial or Implemented)\n- Export the latest snapshot projection state directly into a SQL `employees` schema.\n- Switch client APIs to query the SQL table directly.\n- Teardown Kafka brokers, Schema Registry, and stream projection consumers completely.",
+            "durationMs": 6165,
+            "toolsUsed": [],
+            "usage": {
+              "input": 3708,
+              "output": 1596,
+              "cacheRead": 8128,
+              "totalTokens": 13432
+            },
+            "evaluation": {
+              "decisionSoundness": 100,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 80,
+              "evidenceReversibility": 100,
+              "overall": 96,
+              "matchedTargetPatterns": [],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": [
+                "Low throughput",
+                "High operational cost vs low benefit",
+                "Cargo-cult over-engineering risk"
+              ],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          },
+          {
+            "scenarioId": "scenario-05-god-class-refactoring",
+            "scenarioTitle": "Monolithic OrderProcessor God Class Refactoring",
+            "category": "refactoring-smells",
+            "mode": "harness-without-mcp",
+            "output": "\n### Target Architecture & Component Breakdown\n\nTo achieve high cohesion ($\\text{LCOM4} = 1$) and low cyclomatic complexity ($< 10$ per method), decompose the 2,800-line monolith into dedicated single-responsibility domain handlers coordinated by a thin pipeline orchestrator.\n\n```\nOrderContext -> [ FraudChecker ] -> [ TaxCalculator ] -> [ ReserveInventory ] -> [ ProcessPayment ] -> [ CreateShipping ] -> [ SendEmail ]\n```\n\n#### Micro-Domains & Boundaries\n- **`FraudChecker`**: Evaluates order risk rules.\n- **`TaxCalculator`**: Computes tax per region/jurisdiction.\n- **`InventoryService`**: Checks and reserves stock.\n- **`PaymentAdapter`**: Interfaces with payment gateways.\n- **`ShippingService`**: Creates labels and shipment records.\n- **`NotificationService`**: Enqueues post-order transactional emails.\n- **`OrderPipeline`**: Executes steps sequentially, halting on first failure.\n\n---\n\n### Step-by-Step Incremental Refactoring Plan\n\n#### Phase 1: Characterization Testing (Safety Net)\nBefore writing or extracting new code:\n- Write broad characterization/snapshot integration tests covering `OrderProcessor.process(order)` across all edge cases (tax rates, fraud scores, payment declines, out-of-stock items, shipping failures).\n- Assert full regression safety without modifying existing code.\n\n#### Phase 2: Define Shared Context & Step Interface\nDefine a minimal, immutable `OrderContext` struct passed through pipeline steps.\n\n```typescript\nexport interface OrderContext {\n  readonly orderId: string;\n  readonly customerId: string;\n  readonly items: readonly OrderItem[];\n  readonly shippingAddress: Address;\n  taxAmount?: number;\n  fraudRiskScore?: number;\n  paymentTransactionId?: string;\n  trackingNumber?: string;\n}\n\nexport interface OrderStep {\n  readonly name: string;\n  execute(context: OrderContext): Promise<Result<OrderContext, OrderError>>;\n}\n```\n\n#### Phase 3: Extract Domain Handlers (Atomic Moves)\nExtract each branch of the switch/conditional block into isolated, testable step modules under 100 lines each.\n\nExample step:\n```typescript\nexport class TaxCalculatorStep implements OrderStep {\n  readonly name = \"TaxCalculator\";\n\n  constructor(private readonly taxProvider: TaxProvider) {}\n\n  async execute(ctx: OrderContext): Promise<Result<OrderContext, OrderError>> {\n    if (ctx.items.length === 0) {\n      return Result.ok(ctx);\n    }\n    const taxAmount = await this.taxProvider.calculate(ctx.items, ctx.shippingAddress);\n    return Result.ok({ ...ctx, taxAmount });\n  }\n}\n```\n\n#### Phase 4: Construct Thin Orchestrator & Strangler Delegation\nReplace the conditional block inside `OrderProcessor` with a pipeline runner, or wrap the legacy logic behind a feature flag during transition.\n\n```typescript\nexport class OrderPipeline {\n  constructor(private readonly steps: readonly OrderStep[]) {}\n\n  async run(initialContext: OrderContext): Promise<Result<OrderContext, OrderError>> {\n    let currentContext = initialContext;\n\n    for (const step of this.steps) {\n      const result = await step.execute(currentContext);\n      if (result.isFailure) {\n        return result;\n      }\n      currentContext = result.value;\n    }\n\n    return Result.ok(currentContext);\n  }\n}\n```\n\n#### Phase 5: Legacy Monolith Deletion\nOnce all steps are extracted, fully unit-tested, and validated against the characterization suite:\n- Replace `OrderProcessor` internals with `OrderPipeline`.\n- Delete dead conditional paths, unused helpers, and legacy state mutators.\n\n---\n\n### Key Architectural Guidelines\n\n1. **Keep Handlers Stateless**: Pass context in, return updated context or result out. Avoid shared class state to guarantee $\\text{LCOM4} = 1$.\n2. **Limit Cyclomatic Complexity**: Eliminate nested `if`/`switch` blocks inside steps by relying on polymorphism, early returns, or lookup maps.\n3. **Async Event Offloading for Side-Effects**: Email notifications and analytics should listen to `OrderProcessed` events asynchronously rather than running inline inside the payment transaction path.\n\n---\n\n### Reversibility & Rollback Triggers\n\n- **Feature Flag Rollback**: Keep `USE_NEW_ORDER_PIPELINE` flag enabled during deployment to instantly fall back to legacy `OrderProcessor` if error rate increases.\n- **Tipping Point Metrics**:\n  - Revert if pipeline execution latency p99 exceeds baseline by $> 5\\%$.\n  - Revert if unhandled exception rate exceeds $0.01\\%$.",
+            "durationMs": 6909,
+            "toolsUsed": [],
+            "usage": {
+              "input": 3709,
+              "output": 1800,
+              "cacheRead": 8128,
+              "totalTokens": 13637
+            },
+            "evaluation": {
+              "decisionSoundness": 25,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 100,
+              "evidenceReversibility": 100,
+              "overall": 74,
+              "matchedTargetPatterns": [],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": ["Single Responsibility Principle", "High cohesion / low coupling"],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          }
+        ]
+      },
+      "withMcp": {
+        "overall": 88.2,
+        "soundness": 82.2,
+        "antiCargoCult": 100,
+        "quality": 80,
+        "evidence": 93,
+        "avgInputTokens": 23968,
+        "avgOutputTokens": 3994,
+        "avgTotalTokens": 79699,
+        "efficiency": 1.11,
+        "runs": [
+          {
+            "scenarioId": "scenario-01-carrier-boundary",
+            "scenarioTitle": "Third-Party Carrier API Interface Insulation",
+            "category": "integration-boundaries",
+            "mode": "harness-with-mcp",
+            "output": "\n### Architectural Blueprint: Ports & Adapters (Hexagonal Architecture) with Anti-Corruption Layer (ACL)\n\nTo insulate your core business logic from vendor-specific payload schemas (FedEx, UPS, DHL), implement a **Ports & Adapters Architecture** paired with an **Anti-Corruption Layer (ACL)**.\n\n```\n┌─────────────────────────────────────────────────────────┐\n│                      CORE DOMAIN                        │\n│   ┌─────────────────────────────────────────────────┐   │\n│   │ Canonical Domain Models (Rate, Label, Parcel)   │   │\n│   └─────────────────────────────────────────────────┘   │\n│                           │                             │\n│                           ▼                             │\n│   ┌─────────────────────────────────────────────────┐   │\n│   │         CarrierPort (Domain Interface)          │   │\n│   └─────────────────────────────────────────────────┘   │\n└───────────────────────────┬─────────────────────────────┘\n                            │ (Implements Port)\n       ┌────────────────────┼────────────────────┐\n       ▼                    ▼                    ▼\n┌───────────────┐    ┌───────────────┐    ┌───────────────┐\n│ FedExAdapter  │    │  UPSAdapter   │    │  DHLAdapter   │  INFRASTRUCTURE\n│  + Mapper     │    │  + Mapper     │    │  + Mapper     │  (Vendor SDKs)\n└───────┬───────┘    └───────┬───────┘    └───────┬───────┘\n        ▼                    ▼                    ▼\n  [FedEx SDK]            [UPS SDK]            [DHL SDK]\n```\n\n---\n\n### Concrete TypeScript Implementation\n\n#### 1. Core Domain Interfaces & Canonical Types (`src/domain/ports/carrier.port.ts`)\n\n```typescript\n// Canonical domain entities clean of vendor SDK references\nexport interface Parcel {\n  weightKg: number;\n  dimensionsCm: { length: number; width: number; height: number };\n}\n\nexport interface ShippingAddress {\n  postalCode: string;\n  countryCode: string;\n  addressLines: string[];\n}\n\nexport interface RateRequest {\n  origin: ShippingAddress;\n  destination: ShippingAddress;\n  parcels: Parcel[];\n}\n\nexport interface ShippingRate {\n  carrierId: 'FEDEX' | 'UPS' | 'DHL';\n  serviceCode: string;\n  totalAmount: number;\n  currency: string;\n  estimatedDeliveryDate: Date;\n}\n\nexport interface LabelRequest {\n  rateId: string;\n  shipmentId: string;\n}\n\nexport interface ShippingLabel {\n  trackingNumber: string;\n  labelBuffer: Buffer;\n  mimeType: 'application/pdf' | 'image/png';\n}\n\n// Domain Port Interface\nexport interface CarrierPort {\n  readonly carrierId: 'FEDEX' | 'UPS' | 'DHL';\n  getRates(request: RateRequest): Promise<ShippingRate[]>;\n  createLabel(request: LabelRequest): Promise<ShippingLabel>;\n}\n```\n\n#### 2. Carrier Infrastructure Adapter Example (`src/infrastructure/carriers/fedex.adapter.ts`)\n\n```typescript\nimport type { CarrierPort, RateRequest, ShippingRate, LabelRequest, ShippingLabel } from '../../domain/ports/carrier.port.js';\nimport type { FedExSDKClient, FedExRateResponse } from 'fedex-sdk-thirdparty'; // Confined to adapter file\n\nexport class FedExAdapter implements CarrierPort {\n  readonly carrierId = 'FEDEX' as const;\n\n  constructor(private readonly client: FedExSDKClient) {}\n\n  async getRates(request: RateRequest): Promise<ShippingRate[]> {\n    // 1. Translate Domain model -> Vendor SDK Payload\n    const fedExPayload = this.mapToFedExRatePayload(request);\n\n    try {\n      // 2. Call Vendor SDK\n      const response: FedExRateResponse = await this.client.calculateRates(fedExPayload);\n\n      // 3. Translate Vendor SDK Payload -> Canonical Domain Model\n      return response.output.rateReplyDetails.map((rate) => ({\n        carrierId: this.carrierId,\n        serviceCode: rate.serviceType,\n        totalAmount: rate.ratedShipmentDetails[0].totalNetCharge,\n        currency: rate.ratedShipmentDetails[0].currency,\n        estimatedDeliveryDate: new Date(rate.operationalDetail.deliveryDate),\n      }));\n    } catch (error) {\n      throw this.normalizeError(error);\n    }\n  }\n\n  async createLabel(request: LabelRequest): Promise<ShippingLabel> {\n    // Label creation mapping logic...\n    throw new Error('Method not implemented.');\n  }\n\n  private mapToFedExRatePayload(request: RateRequest) {\n    return {\n      requestedShipment: {\n        shipper: { address: { postalCode: request.origin.postalCode, countryCode: request.origin.countryCode } },\n        recipient: { address: { postalCode: request.destination.postalCode, countryCode: request.destination.countryCode } },\n        requestedPackageLineItems: request.parcels.map((p) => ({\n          weight: { value: p.weightKg, units: 'KG' },\n        })),\n      },\n    };\n  }\n\n  private normalizeError(error: unknown): Error {\n    // Anti-Corruption Layer: Convert vendor-specific errors into domain errors\n    return new Error(`[FedEx Adapter Error]: ${error instanceof Error ? error.message : 'Unknown carrier failure'}`);\n  }\n}\n```\n\n#### 3. Carrier Registry (`src/domain/services/carrier-registry.service.ts`)\n\n```typescript\nimport type { CarrierPort } from '../ports/carrier.port.js';\n\nexport class CarrierRegistry {\n  private readonly adapters = new Map<'FEDEX' | 'UPS' | 'DHL', CarrierPort>();\n\n  register(adapter: CarrierPort): void {\n    this.adapters.set(adapter.carrierId, adapter);\n  }\n\n  get(carrierId: 'FEDEX' | 'UPS' | 'DHL'): CarrierPort {\n    const adapter = this.adapters.get(carrierId);\n    if (!adapter) {\n      throw new Error(`Carrier adapter for ${carrierId} is not registered.`);\n    }\n    return adapter;\n  }\n}\n```\n\n---\n\n### Tradeoffs Analysis\n\n| Architectural Dimension | Pros | Cons / Liabilities |\n| :--- | :--- | :--- |\n| **Domain Purity & Coupling** | Vendor SDK updates or breaking changes are isolated to a single file per vendor (`fedex.adapter.ts`). Domain logic remains zero-dependency. | Requires writing and maintaining transformation boilerplate/mappers between domain and vendor models. |\n| **Testability** | Core domain unit tests rely on lightweight TypeScript mocks of `CarrierPort` without needing API mocks or SDK structures. | Integration testing requires maintaining contract tests for each adapter against vendor sandbox environments. |\n| **Extensibility** | Onboarding a 4th carrier (e.g., USPS) requires adding 1 adapter without touching existing domain files. | \"Least-common-denominator\" abstraction risk: Unique carrier capabilities (e.g., specialized hazardous material tags) require optional port capability extensions. |\n\n---\n\n### Reversible 4-Phase Adoption Plan\n\n```\nPhase 1: Domain Seam  ──► Phase 2: Pilot Slice  ──► Phase 3: Domain Sweep  ──► Phase 4: Enforce Seam\n(Define Port/Types)      (FedEx via Adapter)       (Migrate 19 files)        (ESLint Boundary)\n```\n\n#### Phase 1: Define Seam & Canonical Interfaces\n* **Actions**: Create `src/domain/ports/carrier.port.ts` and canonical entities. Do not touch existing SDK calls yet.\n* **Exit Criteria**: Port interfaces pass code review with no vendor SDK types imported.\n\n#### Phase 2: Smallest Production Slice (FedEx Pilot behind Feature Flag)\n* **Actions**:\n  1. Build `FedExAdapter` implementing `CarrierPort`.\n  2. Instantiate adapter behind a runtime feature flag (`use_ports_for_fedex`).\n  3. Route a single endpoint (e.g., rate estimation) through the port interface.\n* **Rollback Trigger**: If unexpected mapping errors occur in production, flip `use_ports_for_fedex = false` to fallback instantly to legacy inline SDK calls.\n\n#### Phase 3: Incremental Domain Sweep (19 Domain Files)\n* **Actions**:\n  1. Refactor remaining carrier SDK integrations (`UPSAdapter`, `DHLAdapter`).\n  2. Replace vendor direct imports across the 19 domain files file-by-file with injections of `CarrierPort`.\n* **Exit Criteria**: Zero vendor SDK types (`import ... from 'fedex-sdk'`) referenced inside `src/domain/`.\n\n#### Phase 4: Architectural Boundary Enforcement\n* **Actions**: Add an ESLint `no-restricted-imports` rule or Dependency Cruiser rule to prevent domain code from ever importing vendor SDK packages:\n```json\n{\n  \"rules\": {\n    \"no-restricted-imports\": [\n      \"error\",\n      {\n        \"patterns\": [\n          {\n            \"group\": [\"fedex-sdk*\", \"ups-sdk*\", \"dhl-sdk*\"],\n            \"message\": \"Vendor SDKs are forbidden in domain logic. Use CarrierPort adapters in src/infrastructure/.\"\n          }\n        ]\n      }\n    ]\n  }\n}\n```",
+            "durationMs": 20840,
+            "toolsUsed": [
+              "prescribe_architecture",
+              "analyze_design_case",
+              "synthesize_pattern_refactoring",
+              "plan_pattern_adoption"
+            ],
+            "usage": {
+              "input": 28172,
+              "output": 4640,
+              "cacheRead": 72884,
+              "totalTokens": 105696
+            },
+            "evaluation": {
+              "decisionSoundness": 75,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 100,
+              "evidenceReversibility": 100,
+              "overall": 91,
+              "matchedTargetPatterns": ["Adapter", "Anti-Corruption Layer"],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": [
+                "Interface incompatibility",
+                "Domain boundary insulation",
+                "Vendor independence"
+              ],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          },
+          {
+            "scenarioId": "scenario-02-dual-write-consistency",
+            "scenarioTitle": "Database Update and Event Broker Dual Write",
+            "category": "data-consistency",
+            "mode": "harness-with-mcp",
+            "output": "\nTo solve the dual-write problem and guarantee at-least-once event delivery without distributed 2PC (Two-Phase Commit) locking, use the **Transactional Outbox Pattern**.\n\n---\n\n### Architectural Overview\n\nInstead of attempting two independent write operations (PostgreSQL write + Kafka network publish), you make message publication a **local database write** within the same ACID transaction. An asynchronous process then relays the staged outbox events to Kafka.\n\n```\n[ HTTP Client ]\n      │\n      ▼\n┌─────────────────────────────────────────────────────────┐\n│ User Registration Service                               │\n│                                                         │\n│   BEGIN TRANSACTION;                                    │\n│     INSERT INTO users (...);                            │\n│     INSERT INTO outbox_events (...);                    │\n│   COMMIT;  ───────────────────► [ PostgreSQL ACID ]    │\n└─────────────────────────────────────────────────────────┘\n                                          │\n                                          ▼\n                               ┌───────────────────┐\n                               │  outbox_events    │\n                               └──────────┬────────┘\n                                          │\n                  ┌───────────────────────┴───────────────────────┐\n                  │ Change Data Capture (CDC) or Polling Relay     │\n                  └───────────────────────┬───────────────────────┘\n                                          │\n                                          ▼\n                                  [ Kafka Topic ]\n                                          │\n                                          ▼\n                               [ Idempotent Consumer ]\n```\n\n---\n\n### Step-by-Step Architecture\n\n#### 1. Outbox Table Schema (PostgreSQL)\n\nCreate an `outbox_events` table in PostgreSQL inside the same schema/database as your application data:\n\n```sql\nCREATE TABLE outbox_events (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    aggregate_type VARCHAR(255) NOT NULL,    -- e.g. 'User'\n    aggregate_id VARCHAR(255) NOT NULL,      -- e.g. user_id\n    event_type VARCHAR(255) NOT NULL,        -- e.g. 'UserRegistered'\n    payload JSONB NOT NULL,                  -- Event body\n    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n    processed_at TIMESTAMPTZ                 -- Used if using Polling Relay\n);\n\nCREATE INDEX idx_outbox_unprocessed ON outbox_events (created_at) WHERE processed_at IS NULL;\n```\n\n#### 2. Single Local Transaction (User Registration Service)\n\nPersist the user and the domain event in a **single local database transaction**:\n\n```sql\nBEGIN;\n\nINSERT INTO users (id, email, name, status)\nVALUES ('usr_123', 'jane@example.com', 'Jane Doe', 'ACTIVE');\n\nINSERT INTO outbox_events (id, aggregate_type, aggregate_id, event_type, payload)\nVALUES (\n  'evt_98765',\n  'User',\n  'usr_123',\n  'UserRegistered',\n  '{\"user_id\": \"usr_123\", \"email\": \"jane@example.com\"}'::jsonb\n);\n\nCOMMIT;\n```\n\n* **Outcome**: If the DB write succeeds, the event is guaranteed to be persisted. If PostgreSQL fails or rolls back, neither the user nor the event is saved.\n\n---\n\n#### 3. Event Delivery Relay to Kafka\n\nChoose one of two strategies to read outbox events and publish them to Kafka:\n\n##### Approach A: Log-Based CDC (Recommended for High Throughput)\n* **How it works**: Use a Change Data Capture (CDC) tool like **Debezium** to read PostgreSQL's Write-Ahead Log (WAL) via logical replication.\n* **Flow**: Debezium captures inserts into `outbox_events` directly from WAL and streams them directly into Kafka.\n* **Benefits**: Zero database polling overhead, sub-second publishing latency, minimal database load.\n\n##### Approach B: Polling Relay Worker (Simpler Operational Footprint)\n* **How it works**: A background worker process periodically fetches unprocessed events using non-blocking row locks:\n  ```sql\n  SELECT * FROM outbox_events\n  WHERE processed_at IS NULL\n  ORDER BY created_at ASC\n  LIMIT 100\n  FOR UPDATE SKIP LOCKED;\n  ```\n* **Flow**:\n  1. Fetch batch of pending outbox events.\n  2. Publish events to Kafka (using `aggregate_id` as Kafka partition key for order preservation).\n  3. Mark rows as processed (`UPDATE outbox_events SET processed_at = NOW() WHERE id IN (...)`) or delete published records.\n\n---\n\n#### 4. Guaranteeing At-Least-Once Semantics & Consumer Idempotency\n\nBecause Kafka publishing or DB state updates might fail during network partitions or worker crashes, events may be delivered more than once.\n\n* **Publisher side**: Retries publishing until Kafka acknowledges (`acks=all`).\n* **Consumer side (Idempotent Receiver)**: Consumers must deduplicate incoming events by storing processed event IDs:\n\n```sql\n-- Executed inside consumer transaction\nINSERT INTO processed_events (event_id, processed_at)\nVALUES ('evt_98765', NOW())\nON CONFLICT (event_id) DO NOTHING;\n```\n\n---\n\n### Architecture Summary\n\n| Characteristic | Direct Kafka Publish (Old) | Transactional Outbox (New) |\n| :--- | :--- | :--- |\n| **Consistency** | Dual-write vulnerability (Partial failures) | Atomic local DB write |\n| **Kafka Outage Impact** | Data loss or failing user registrations | Events queue safely in PostgreSQL |\n| **Delivery Guarantee** | Best-effort / volatile | Guaranteed At-Least-Once |\n| **System Coupling** | Hard dependency on Kafka uptime | Asynchronous decoupling |",
+            "durationMs": 15425,
+            "toolsUsed": ["prescribe_architecture"],
+            "usage": {
+              "input": 16658,
+              "output": 3145,
+              "cacheRead": 28281,
+              "totalTokens": 48084
+            },
+            "evaluation": {
+              "decisionSoundness": 100,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 70,
+              "evidenceReversibility": 100,
+              "overall": 94,
+              "matchedTargetPatterns": [
+                "Transactional Outbox",
+                "Idempotent Receiver",
+                "Change Data Capture"
+              ],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": [
+                "Dual-write hazard",
+                "At-least-once delivery",
+                "Atomicity without 2PC"
+              ],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          },
+          {
+            "scenarioId": "scenario-03-downstream-resilience",
+            "scenarioTitle": "Downstream Service Outage & Cascade Prevention",
+            "category": "resilience",
+            "mode": "harness-with-mcp",
+            "output": "\nTo isolate an intermittently slow external vendor and protect your API connection pool from cascading exhaustion, implement a compound resilience strategy using **Bulkhead**, **Circuit Breaker**, **Bounded Timeout**, and **Fallback** patterns.\n\n---\n\n### Architectural Overview\n\n```\n[ Incoming API Request ]\n           │\n           ▼\n┌────────────────────────────────────────────────────────┐\n│               Payment Scoring Domain Port              │\n└──────────────────────────┬─────────────────────────────┘\n                           │\n                           ▼\n┌────────────────────────────────────────────────────────┐\n│             Resilience Layer (Decorator)               │\n│                                                        │\n│   1. Bulkhead (Max Concurrent Outbound Requests)       │\n│   2. Circuit Breaker (Trip on Latency / Failures)      │\n│   3. Strict Timeout (e.g., 800ms limit vs 20s spike)   │\n└──────────┬──────────────────────────────────┬──────────┘\n           │ (Healthy / Fast)                 │ (Degraded / Open Circuit)\n           ▼                                  ▼\n┌──────────────────────┐           ┌────────────────────┐\n│ Outbound HTTP Client │           │ Fallback Strategy  │\n│  (Isolated Pool)     │           │ (Static Score /    │\n│          │           │           │  Cached / Rule)    │\n│          ▼           │           └──────────┬─────────┘\n│ External Vendor (20s)│                      │\n└──────────────────────┘                      │\n           │                                  │\n           └──────────────────┬───────────────┘\n                              ▼\n                   [ Resilient API Response ]\n```\n\n---\n\n### Core Resilience Patterns\n\n#### 1. Bulkhead Pattern (Connection & Concurrency Isolation)\n* **Problem Solved**: Prevents vendor slowness from exhausting your core API server thread/connection pool.\n* **Mechanism**: Allocate a dedicated, bounded thread pool or semaphore (e.g., max 20 concurrent outbound calls) specifically for this vendor client.\n* **Result**: If the vendor degrades, at most 20 connections freeze; the rest of your server's pool remains free to serve other endpoints.\n\n#### 2. Circuit Breaker Pattern\n* **Problem Solved**: Prevents sending traffic to a vendor known to be failing or timing out.\n* **States**:\n  * **Closed**: Normal operations. Outbound calls pass through.\n  * **Open**: Tripped when error/latency rates exceed threshold (e.g., > 50% calls take > 1s or fail over a 10s rolling window). All incoming vendor calls short-circuit immediately with a fast failure/fallback without invoking network I/O.\n  * **Half-Open**: Periodically allows a trial request to verify if the vendor service has recovered.\n\n#### 3. Strict Outbound Timeouts & Deadline Propagation\n* **Problem Solved**: Cancels slow network connections before they hold server threads indefinitely.\n* **Mechanism**: Set an aggressive execution timeout (e.g., `500ms`–`1000ms`) on the vendor HTTP client. If context deadlines expire, abort socket reads and return immediately.\n\n#### 4. Fallback Pattern (Graceful Degradation)\n* **Problem Solved**: Prevents external failures from surfacing as 500 internal errors to downstream clients.\n* **Fallback Options**:\n  * **Rule-based heuristic**: Calculate a conservative default score based on internal data.\n  * **Cached score**: Serve a recent historical score for the user.\n  * **Async queue**: Accept payment conditionally and schedule scoring asynchronously.\n\n---\n\n### Production Implementation Layout\n\n#### 1. Domain Port (Contract)\n```typescript\n// src/domain/ports/payment-scorer.port.ts\nexport interface ScoreRequest {\n  userId: string;\n  amount: number;\n  currency: string;\n}\n\nexport interface ScoreResult {\n  score: number;\n  riskTier: 'LOW' | 'MEDIUM' | 'HIGH';\n  isFallback: boolean;\n}\n\nexport interface PaymentScorerPort {\n  evaluateRisk(request: ScoreRequest): Promise<ScoreResult>;\n}\n```\n\n#### 2. Resilient Vendor Adapter\n```typescript\n// src/infrastructure/adapters/resilient-vendor-scorer.adapter.ts\nimport { PaymentScorerPort, ScoreRequest, ScoreResult } from '../../domain/ports/payment-scorer.port';\n\nexport interface ResilienceConfig {\n  timeoutMs: number;\n  maxConcurrentCalls: number;\n  failureThresholdPercentage: number;\n  resetTimeoutMs: number;\n}\n\nexport class ResilientPaymentScorerAdapter implements PaymentScorerPort {\n  private activeConcurrency = 0;\n  private circuitState: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';\n  private failureCount = 0;\n  private totalCount = 0;\n  private lastStateChange = Date.now();\n\n  constructor(\n    private readonly vendorHttpClient: (req: ScoreRequest, timeoutMs: number) => Promise<ScoreResult>,\n    private readonly config: ResilienceConfig\n  ) {}\n\n  async evaluateRisk(request: ScoreRequest): Promise<ScoreResult> {\n    this.checkCircuitReset();\n\n    // 1. Circuit Breaker Fast-Fail\n    if (this.circuitState === 'OPEN') {\n      return this.executeFallback(request, 'Circuit Breaker OPEN');\n    }\n\n    // 2. Bulkhead Concurrency Guard\n    if (this.activeConcurrency >= this.config.maxConcurrentCalls) {\n      return this.executeFallback(request, 'Bulkhead Capacity Reached');\n    }\n\n    this.activeConcurrency++;\n    try {\n      // 3. Strict Timeout Wrapper\n      const result = await this.callWithTimeout(request, this.config.timeoutMs);\n      this.recordSuccess();\n      return result;\n    } catch (error) {\n      this.recordFailure();\n      return this.executeFallback(request, error instanceof Error ? error.message : 'Vendor Call Failed');\n    } finally {\n      this.activeConcurrency--;\n    }\n  }\n\n  private async callWithTimeout(request: ScoreRequest, timeoutMs: number): Promise<ScoreResult> {\n    return Promise.race([\n      this.vendorHttpClient(request, timeoutMs),\n      new Promise<never>((_, reject) =>\n        setTimeout(() => reject(new Error('Vendor Timeout Exceeded')), timeoutMs)\n      ),\n    ]);\n  }\n\n  private executeFallback(request: ScoreRequest, reason: string): ScoreResult {\n    // Log metric/warning for operational monitoring\n    console.warn(`[PaymentScorer] Fallback triggered: ${reason}`);\n    return {\n      score: 50, // Default neutral risk score\n      riskTier: 'MEDIUM',\n      isFallback: true,\n    };\n  }\n\n  private recordSuccess(): void {\n    this.totalCount++;\n    if (this.circuitState === 'HALF_OPEN') {\n      this.circuitState = 'CLOSED';\n      this.failureCount = 0;\n      this.totalCount = 0;\n    }\n  }\n\n  private recordFailure(): void {\n    this.failureCount++;\n    this.totalCount++;\n\n    const failureRate = (this.failureCount / this.totalCount) * 100;\n    if (this.totalCount >= 10 && failureRate >= this.config.failureThresholdPercentage) {\n      this.circuitState = 'OPEN';\n      this.lastStateChange = Date.now();\n    }\n  }\n\n  private checkCircuitReset(): void {\n    if (this.circuitState === 'OPEN' && Date.now() - this.lastStateChange > this.config.resetTimeoutMs) {\n      this.circuitState = 'HALF_OPEN';\n    }\n  }\n}\n```\n\n---\n\n### Operational & Metric Recommendations\n\n1. **Client Socket Pool Limits**: Ensure the underlying HTTP agent has `maxSockets` and `freeSocketTimeout` explicitly set (e.g., max 20 connections), matching your Bulkhead limit.\n2. **Prometheus / OpenTelemetry Metrics**:\n   * `vendor_requests_total{status=\"success|timeout|cb_open|fallback\"}`\n   * `vendor_latency_seconds_bucket`\n   * `bulkhead_concurrency_active`\n3. **Alerting Triggers**: Alert when Circuit Breaker enters `OPEN` state for > 2 minutes or fallback rate exceeds 5% of total traffic.",
+            "durationMs": 11710,
+            "toolsUsed": ["prescribe_architecture"],
+            "usage": {
+              "input": 11673,
+              "output": 3336,
+              "cacheRead": 20193,
+              "totalTokens": 35202
+            },
+            "evaluation": {
+              "decisionSoundness": 81,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 80,
+              "evidenceReversibility": 100,
+              "overall": 89,
+              "matchedTargetPatterns": ["Circuit Breaker", "Timeout", "Bulkhead"],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": [
+                "Fault isolation",
+                "Bounded latency",
+                "Cascading failure prevention"
+              ],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          },
+          {
+            "scenarioId": "scenario-04-premature-cqrs-event-sourcing",
+            "scenarioTitle": "CRUD Admin Panel with Low Write Volume",
+            "category": "anti-cargo-cult",
+            "mode": "harness-with-mcp",
+            "output": "\n### Recommendation: **Do NOT Adopt Event Sourcing, CQRS, and Kafka**\n\nProposing Event Sourcing, CQRS, and Kafka for an internal directory with **1,000 records**, **50 writes/day**, and a **2-developer team** is a classic example of **speculative over-engineering (cargo-cult architecture)**. \n\n---\n\n### Key Risks & Force Analysis\n\n1. **Massive Operational & Maintenance Overhead**\n   * **Scale Mismatch**: 50 writes per day equates to less than **0.0006 writes per second**. Kafka and CQRS are designed for high-throughput distributed systems (e.g., thousands of events/sec).\n   * **Team Drag**: A 2-developer team will spend more time managing Kafka cluster stability, consumer lag, topic partitioning, schema registries, and projection rebuilds than building features for users.\n\n2. **Unnecessary Complexity & Eventual Consistency**\n   * Employee directories usually require immediate read-after-write consistency (e.g., editing a profile and seeing the updated name immediately). \n   * CQRS over Kafka introduces asynchronous projection lag, handling of duplicate/out-of-order events, and reconciliation logic where a standard ACID database transaction eliminates these issues entirely out of the box.\n\n3. **Schema Evolution & Compliance Traps**\n   * **Event Schema Upcasting**: As employee fields change, managing event migrations and upcasters across an append-only log becomes complex.\n   * **Data Privacy & Erasure**: Fulfilling right-to-erasure/GDPR requests or hard-deleting PII from append-only Kafka topics or event streams requires complex crypto-shredding or log compaction strategy.\n\n---\n\n### Soundest Maintainable Path: Direct Relational CRUD\n\nAdopt a simple, maintainable architecture aligned with your team's capacity and domain needs:\n\n```\n[ Frontend Client ] ──> [ REST/GraphQL API ] ──> [ Relational DB (PostgreSQL / SQLite) ]\n                                                       │\n                                                       └──> [ audit_logs Table (Optional) ]\n```\n\n* **Core Stack**: A standard relational database (e.g., PostgreSQL) with an ORM or query builder behind a monolithic API (Node.js, Go, Python, etc.).\n* **Auditability**: If historical tracking is required, implement a standard append-only `audit_logs` table (storing `actor_id`, `action`, `changed_fields`, `timestamp`) within the same database transaction.\n* **Performance**: 1,000 employee records consume less than 1 MB of memory. The entire dataset can easily sit in RAM or be indexed with standard database indexes for sub-millisecond search queries.\n\n---\n\n### Tipping Points for Re-evaluation\n\nOnly consider introducing CQRS, Event Sourcing, or Kafka if the forces fundamentally shift to:\n* **Write Volume**: Scaled beyond 5,000+ writes/second.\n* **Read/Write Asymmetry**: Read-to-write ratio > 100:1 with distinct, complex query models that relational indexes cannot serve.\n* **Regulatory Event Replay**: Strict legal requirement for deterministic, point-in-time system state reconstruction from historical domain events.",
+            "durationMs": 22601,
+            "toolsUsed": ["prescribe_architecture", "detect_pattern_misuse", "analyze_design_case"],
+            "usage": {
+              "input": 34919,
+              "output": 3931,
+              "cacheRead": 80783,
+              "totalTokens": 119633
+            },
+            "evaluation": {
+              "decisionSoundness": 100,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 50,
+              "evidenceReversibility": 65,
+              "overall": 83,
+              "matchedTargetPatterns": [],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": [
+                "Low throughput",
+                "High operational cost vs low benefit",
+                "Cargo-cult over-engineering risk"
+              ],
+              "detectedRollback": false,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          },
+          {
+            "scenarioId": "scenario-05-god-class-refactoring",
+            "scenarioTitle": "Monolithic OrderProcessor God Class Refactoring",
+            "category": "refactoring-smells",
+            "mode": "harness-with-mcp",
+            "output": "\nTo refactor a 2,800-line monolithic `OrderProcessor` into a high-cohesion (LCOM4 = 1), low-complexity (Cyclomatic Complexity < 10), and safely testable codebase, use a **Pipeline Orchestrator with Subdomain Services** alongside a **Facade-based Strangler Migration**.\n\n---\n\n### Architectural Strategy Overview\n\n```\n                        [ Legacy OrderProcessor (Facade) ]\n                                        │\n                                        ▼\n                         [ OrderProcessingPipeline ]\n                                        │\n      ┌───────────────┬─────────────────┼─────────────────┬───────────────┐\n      ▼               ▼                 ▼                 ▼               ▼\n[ TaxStep ]    [ FraudStep ]    [ PaymentStep ]   [ InventoryStep ] [ ShippingStep ]\n      │               │                 │                 │               │\n      ▼               ▼                 ▼                 ▼               ▼\n (ITaxService) (IFraudDetector) (IPaymentGateway)  (IInventory)   (IShippingPort)\n```\n\n---\n\n### Step-by-Step Refactoring Plan\n\n#### Phase 1: Establish Safety Net (Characterization Tests & Facade Interface)\n1. Write end-to-end characterization tests covering the standard execution paths and edge cases of the existing `OrderProcessor`.\n2. Convert `OrderProcessor` into a **Facade** that delegates internal work to newly extracted domain services. Maintain backward compatibility for existing callers.\n\n#### Phase 2: Domain Decomposition (SRP & LCOM4 = 1)\nExtract each distinct concern into its own interface (Port) and class (Adapter/Service). Each class holds state and methods strictly dedicated to its singular domain boundary, guaranteeing **LCOM4 = 1**.\n\n* **`TaxCalculator`**: Manages state/methods for tax rules.\n* **`FraudEvaluator`**: Manages state/methods for risk checks.\n* **`PaymentProcessor`**: Handles payment charging and refunds.\n* **`InventoryManager`**: Manages stock reservations.\n* **`NotificationDispatcher`**: Handles email/SMS dispatches.\n* **`FulfillmentService`**: Handles label creation and shipping.\n\n#### Phase 3: Pipeline Step Architecture (Cyclomatic Complexity < 10)\nReplace nested `if/else` and `switch` statements with an explicit step-based processing pipeline. Each step executes a single isolated task and returns a standard step result.\n\n---\n\n### Concrete TypeScript Implementation\n\n#### 1. Define Pipeline Contracts\n\n```typescript\n// src/domain/pipeline/types.ts\n\nexport interface OrderContext {\n  orderId: string;\n  customerId: string;\n  items: Array<{ id: string; price: number; quantity: number }>;\n  totalAmount: number;\n  taxAmount?: number;\n  fraudScore?: number;\n  paymentId?: string;\n  shippingTrackingId?: string;\n  metadata: Record<string, unknown>;\n}\n\nexport interface StepResult {\n  success: boolean;\n  error?: string;\n}\n\nexport interface OrderProcessingStep {\n  readonly name: string;\n  execute(context: OrderContext): Promise<StepResult>;\n}\n```\n\n#### 2. Implement Cohesive, Single-Responsibility Steps (LCOM4 = 1, CC < 5)\n\n```typescript\n// src/domain/steps/TaxCalculationStep.ts\nimport { OrderProcessingStep, OrderContext, StepResult } from '../pipeline/types.js';\n\nexport interface ITaxCalculator {\n  calculateTax(context: OrderContext): Promise<number>;\n}\n\nexport class TaxCalculationStep implements OrderProcessingStep {\n  readonly name = 'TaxCalculation';\n\n  constructor(private readonly taxCalculator: ITaxCalculator) {}\n\n  async execute(context: OrderContext): Promise<StepResult> {\n    try {\n      context.taxAmount = await this.taxCalculator.calculateTax(context);\n      context.totalAmount += context.taxAmount;\n      return { success: true };\n    } catch (err) {\n      return { success: false, error: (err as Error).message };\n    }\n  }\n}\n```\n\n```typescript\n// src/domain/steps/PaymentStep.ts\nimport { OrderProcessingStep, OrderContext, StepResult } from '../pipeline/types.js';\n\nexport interface IPaymentGateway {\n  charge(orderId: string, amount: number): Promise<{ paymentId: string; status: string }>;\n}\n\nexport class PaymentStep implements OrderProcessingStep {\n  readonly name = 'PaymentProcessing';\n\n  constructor(private readonly paymentGateway: IPaymentGateway) {}\n\n  async execute(context: OrderContext): Promise<StepResult> {\n    const response = await this.paymentGateway.charge(context.orderId, context.totalAmount);\n    if (response.status !== 'SUCCESS') {\n      return { success: false, error: `Payment failed with status ${response.status}` };\n    }\n    context.paymentId = response.paymentId;\n    return { success: true };\n  }\n}\n```\n\n#### 3. Low-Complexity Pipeline Orchestrator (CC = 3)\n\n```typescript\n// src/domain/pipeline/OrderProcessingPipeline.ts\nimport { OrderProcessingStep, OrderContext, StepResult } from './types.js';\n\nexport class OrderProcessingPipeline {\n  constructor(private readonly steps: OrderProcessingStep[]) {}\n\n  async process(context: OrderContext): Promise<StepResult> {\n    for (const step of this.steps) {\n      const result = await step.execute(context);\n      if (!result.success) {\n        return {\n          success: false,\n          error: `[${step.name}] ${result.error ?? 'Step failed'}`\n        };\n      }\n    }\n    return { success: true };\n  }\n}\n```\n\n#### 4. Backward-Compatible Refactored `OrderProcessor` (Facade)\n\n```typescript\n// src/application/OrderProcessor.ts\nimport { OrderProcessingPipeline } from '../domain/pipeline/OrderProcessingPipeline.js';\nimport { TaxCalculationStep, ITaxCalculator } from '../domain/steps/TaxCalculationStep.js';\nimport { PaymentStep, IPaymentGateway } from '../domain/steps/PaymentStep.js';\nimport { OrderContext, StepResult } from '../domain/pipeline/types.js';\n\nexport class OrderProcessor {\n  private readonly pipeline: OrderProcessingPipeline;\n\n  constructor(\n    taxCalculator: ITaxCalculator,\n    paymentGateway: IPaymentGateway\n  ) {\n    this.pipeline = new OrderProcessingPipeline([\n      new TaxCalculationStep(taxCalculator),\n      new PaymentStep(paymentGateway)\n    ]);\n  }\n\n  async processOrder(orderContext: OrderContext): Promise<StepResult> {\n    return this.pipeline.process(orderContext);\n  }\n}\n```\n\n---\n\n### Isolation & Unit Testing Matrix\n\nBecause every domain step depends only on narrow interface ports (e.g., `ITaxCalculator`, `IPaymentGateway`), unit tests run in isolation with zero setup overhead:\n\n```typescript\n// test/TaxCalculationStep.spec.ts\nimport { TaxCalculationStep, ITaxCalculator } from '../src/domain/steps/TaxCalculationStep.js';\n\ndescribe('TaxCalculationStep', () => {\n  it('adds calculated tax to context total', async () => {\n    const mockTaxCalculator: ITaxCalculator = {\n      calculateTax: async () => 15.00\n    };\n    const step = new TaxCalculationStep(mockTaxCalculator);\n    const context = { orderId: '123', customerId: 'c1', items: [], totalAmount: 100.00, metadata: {} };\n\n    const result = await step.execute(context);\n\n    expect(result.success).toBe(true);\n    expect(context.taxAmount).toBe(15.00);\n    expect(context.totalAmount).toBe(115.00);\n  });\n});\n```\n\n---\n\n### Refactoring Metrics Target Matrix\n\n| Metric | Monolithic Baseline | Refactored Architecture | Structural Benefit |\n| :--- | :--- | :--- | :--- |\n| **LCOM4** | > 6 (Severely Fragmented) | **1.0** (Per class) | Perfect cohesion; each step/service operates on one dedicated set of data. |\n| **Cyclomatic Complexity** | > 40 per method | **< 4** per method | Minimal branch points; easy verification and zero branch explosion. |\n| **Test Setup Time** | High (Requires database, mailers, gateways) | **Low** (Pass focused step mocks) | Test step logic in milliseconds without touching external infrastructure. |\n| **Blast Radius of Change** | Global (Modifying shipping breaks tax calculation) | **Local** (Isolated step modifications) | High safety; step logic changes do not spill over into unrelated steps. |",
+            "durationMs": 25252,
+            "toolsUsed": ["prescribe_architecture", "refactor_code_smell", "analyze_design_case"],
+            "usage": {
+              "input": 28416,
+              "output": 4916,
+              "cacheRead": 56549,
+              "totalTokens": 89881
+            },
+            "evaluation": {
+              "decisionSoundness": 55,
+              "antiCargoCult": 100,
+              "maintainabilityQuality": 100,
+              "evidenceReversibility": 100,
+              "overall": 84,
+              "matchedTargetPatterns": ["Strategy", "Facade"],
+              "flaggedContraindicatedPatterns": [],
+              "matchedForces": ["Single Responsibility Principle", "High cohesion / low coupling"],
+              "detectedRollback": true,
+              "detectedMeasurements": true,
+              "directSolutionCorrectlyIdentified": true
+            }
+          }
+        ]
+      },
+      "deltaScore": 1.6,
+      "deltaTokens": 63134,
+      "efficiencyMultiplier": 0.21
+    }
+  ]
+}
