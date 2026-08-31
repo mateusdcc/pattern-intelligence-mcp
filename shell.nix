@@ -17,7 +17,7 @@ let
                 command = "npx";
                 args = [
                   "-y"
-                  "@executeautomation/playwright-mcp-server"
+                  "@playwright/mcp@latest"
                 ];
               };
             };
