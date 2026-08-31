@@ -71,10 +71,7 @@ export function evaluateOutput(output: string, oracle: ScenarioOracle): Evaluati
     const regex = new RegExp(`\\b${escaped}\\b`, "i");
     if (regex.test(normalized) || normalized.includes(contraindicated.toLowerCase())) {
       // Check if it was mentioned in an avoidance / rejection context
-      const avoidanceBefore = new RegExp(
-        `(${rejectionVerbs})[^.\\n]{0,100}\\b${escaped}`,
-        "i",
-      );
+      const avoidanceBefore = new RegExp(`(${rejectionVerbs})[^.\\n]{0,100}\\b${escaped}`, "i");
       const avoidanceAfter = new RegExp(
         `\\b${escaped}\\b[^.\\n]{0,100}(is|are|as|would be|was)?\\s*(${rejectionVerbs})`,
         "i",
